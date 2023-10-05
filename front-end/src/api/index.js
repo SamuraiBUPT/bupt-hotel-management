@@ -7,6 +7,9 @@ const api = {
   },
   getData(){
     return axios.get(path.localTEST);
+  },
+  postLogin(data){
+    return axios.post(path.login, data);
   }
 }
 

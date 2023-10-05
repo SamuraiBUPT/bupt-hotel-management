@@ -2,7 +2,7 @@
   <el-card shadow="always" style="width: 800px;">
     <el-row>
       <el-col :span="12">
-        <div style="margin-top: 60px"></div>
+        <div style="margin-top: 65px"></div>
         <div>
           <img src="../../assets/photos/bupt-words.jpg" style="width: 350px;">
         </div>

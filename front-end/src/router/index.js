@@ -14,6 +14,11 @@ const routes = [
     component: () => import("../views/login/LoginView.vue"),
   },
   {
+    path: "/manager",
+    name: "Manager",
+    component: () => import("../views/manager_panel/PanelView.vue"),
+  },
+  {
     path: "/componentDemo",
     name: "ComponentDemo",
     component: () => import("../views/error/404.vue"),
