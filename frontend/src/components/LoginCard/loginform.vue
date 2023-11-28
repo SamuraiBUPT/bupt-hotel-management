@@ -32,9 +32,10 @@
 </template>
 
 <script>
-import ValidCode from '../ValidCode/validcode.vue'
-import api from '../../api'
-import axios from 'axios'
+import ValidCode from '../ValidCode/validcode.vue';
+import api from '../../api';
+import { ElMessage } from 'element-plus';
+import {h} from 'vue';
 
 export default {
   name: 'LoginForm',
@@ -77,7 +78,7 @@ export default {
           }
           else {
             console.log('login failed');
-            alert("用户名或密码错误，请重新输入！");
+            ElMessage.error("用户名或密码错误！");
             this.$refs.ValidCodeRef.refreshCode();
             return;
           }
