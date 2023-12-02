@@ -1,6 +1,6 @@
 <template>
   <el-card @click="OfferDetail" @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-  :class="{hovered: isHovered}">
+  :class="{hovered: isHovered}" style="width: 200px; height: 100px;">
     <div class="text item">Room ID: {{ room_id }}</div>
     <div class="text item">Cost: {{ cost }}</div>
   </el-card>
