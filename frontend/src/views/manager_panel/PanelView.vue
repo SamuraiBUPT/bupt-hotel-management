@@ -1,11 +1,11 @@
 <template>  
-  <el-container>  
-    <el-aside>  
-      <MenuRight class="menu" />  
+  <el-container style="overflow: hidden;">  
+    <el-aside style="height: 100%; width: 20%">  
+      <MenuRight class="menu"/>  
     </el-aside>  
-    <el-container style="display: flex; flex-wrap: wrap; width: 100%;">  
-      <el-header style="width: 100%; background-color: lightblue;">Header</el-header>
-      <el-container style="display: flex; flex-wrap: wrap; width: 100%;"> 
+    <el-container style="display: flex; flex-wrap: wrap; height: 100%; width: 80%; overflow: hidden;">  
+      <ManagerHeader :identity="identity.identity" :num="identity.num" :total="identity.total" class="managerheader" style=" height: 10%"/>
+      <el-container style="display: flex; flex-wrap: wrap; width: 800px; height: 750px; overflow: scroll;"> 
         <div  
           v-for="(room, index) in rooms"  
           :key="index"  
@@ -21,10 +21,12 @@
 <script>
 import MenuRight from '../../components/MenuRight/menuright.vue'
 import RoomGrid from '../../components/RoomGrid/roomgrid.vue'
+import ManagerHeader from '../../components/ManagerHeader/managerheader.vue'
 export default {
   name: 'PanelView',
   data() {
     return {
+      identity: {identity:"前台", total: 36, num: 34},
       rooms: [  
         { id: 1, cost: 50, state: "empty" },  
         { id: 2, cost: 60, state: "empty"  },  
@@ -69,6 +71,7 @@ export default {
     }
   },
   components: {
+    ManagerHeader,
     MenuRight,
     RoomGrid,
   },
