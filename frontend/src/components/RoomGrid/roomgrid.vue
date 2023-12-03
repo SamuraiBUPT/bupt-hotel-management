@@ -1,8 +1,9 @@
 <template>
   <el-card @click="OfferDetail" @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-  :class="{hovered: isHovered}" style="width: 200px; height: 100px;">
-    <div class="text item">Room ID: {{ room_id }}</div>
-    <div class="text item">Cost: {{ cost }}</div>
+  :class="{hovered: isHovered, 'green-bg': state === 'empty', 'gray-bg': state !== 'empty'}" style="width: 200px; height: 150px;">
+    <div class="text item" style="padding: 5px;">Room ID: {{ room_id }}</div>
+    <div class="text item" style="padding: 5px;">Cost: {{ cost }}</div>
+    <div class="text item" style="padding: 5px;">state: {{ state }}</div>
   </el-card>
 </template>
 
@@ -10,7 +11,8 @@
 export default {
   props: {
     room_id: Number,
-    cost: Number
+    cost: Number,
+    state: String,
   },
   data() {
     return {
@@ -44,6 +46,13 @@ export default {
 .el-card.hovered {
   border: 1px solid rgb(29, 168, 215);
   cursor: pointer;
+}
+.el-card.green-bg {  
+  background-color: #C8E6C9;   
+}  
+  
+.el-card.gray-bg {  
+  background-color: #d3d3d3;  
 }
 
 /* 可以根据需要添加其他样式 */
