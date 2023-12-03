@@ -74,7 +74,8 @@ export default {
           console.log(res);
           if (res.data.status == 200) {
             console.log('login success');
-            this.$router.push('/home');
+            this.$store.commit('setLogin', res.data.user);
+            this.redirectUser();
           }
           else {
             console.log('login failed');
@@ -91,7 +92,10 @@ export default {
       // console.log(code);
       this.code_value = code;
     },
-    
+    redirectUser() {
+      const redirect = this.$route.query.redirect || '/home'; // 默认重定向到 '/home'
+      this.$router.push(redirect);
+    }
   }
 }
 </script>
