@@ -54,7 +54,7 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!store.getters.isLoggedIn) {
+    if (!store.getters.isLoggedIn && !localStorage.getItem('user')) {
       // 如果用户未登录，重定向到登录页面
       next({ path: '/login',
             query: { redirect: to.fullPath } });

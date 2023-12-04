@@ -13,7 +13,7 @@ export default {
     total: Number,
   },
   data() {
-
+    return {}
   },
 }
 
