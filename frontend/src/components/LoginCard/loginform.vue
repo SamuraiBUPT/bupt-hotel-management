@@ -32,9 +32,10 @@
 </template>
 
 <script>
-import ValidCode from '../ValidCode/validcode.vue'
-import api from '../../api'
-import axios from 'axios'
+import ValidCode from '../ValidCode/validcode.vue';
+import api from '../../api';
+import { ElMessage } from 'element-plus';
+import {h} from 'vue';
 
 export default {
   name: 'LoginForm',
@@ -73,11 +74,12 @@ export default {
           console.log(res);
           if (res.data.status == 200) {
             console.log('login success');
-            this.$router.push('/home');
+            this.$store.commit('setLogin', res.data.user);
+            this.redirectUser();
           }
           else {
             console.log('login failed');
-            alert("用户名或密码错误，请重新输入！");
+            ElMessage.error("用户名或密码错误！");
             this.$refs.ValidCodeRef.refreshCode();
             return;
           }
@@ -90,7 +92,10 @@ export default {
       // console.log(code);
       this.code_value = code;
     },
-    
+    redirectUser() {
+      const redirect = this.$route.query.redirect || '/home'; // 默认重定向到 '/home'
+      this.$router.push(redirect);
+    }
   }
 }
 </script>

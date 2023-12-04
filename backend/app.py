@@ -14,7 +14,8 @@ def hello_world():
 def api_login():
     user_data = request.get_json()
     print(user_data)
-    return jsonify({'status': 200})
+    return jsonify({'status': 200,
+                    'user': 'john'})
 
 @app.cli.command()
 def create():

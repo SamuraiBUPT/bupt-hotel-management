@@ -1,6 +1,8 @@
 <template>
-  <div id="loginbackground">
-    <LoginCard />
+  <div class="login-page">
+    <div id="loginbackground">
+      <LoginCard />
+    </div>
   </div>
 </template>
 
@@ -14,8 +16,8 @@
   }
 </script>
 
-<style>
-body, html {
+<style scoped>
+.login-page body, html {
   margin: 0;
   height: 100%;
   font-family: 'Arial', sans-serif;
@@ -37,7 +39,7 @@ body, html {
 }
 
 /* 添加蒙版效果，使背景图像模糊 */
-body::before {
+.login-page body::before {
   content: "";
   position: fixed; /* 使用fixed，确保伪元素始终覆盖整个页面 */
   top: 0;
