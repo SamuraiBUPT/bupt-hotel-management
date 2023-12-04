@@ -13,8 +13,8 @@ from mysqlTable import *
 NORMAL_TEMPERATURE = 25
 
 DATABASE_USER_NAME = "root"
-DATABASE_USER_PASSWORD = "king0723"
-DATABASE_SCHEMA = "bupt-hotel"
+DATABASE_USER_PASSWORD = "1234" # change to your own pwd
+DATABASE_SCHEMA = "backend" # create a db in your machine(schema), utf8, utf8_bin
 DATABASE_USER_PORT = 3306
 DATABASE_USER_HOST = "localhost"
 lock = threading.Lock()
@@ -106,9 +106,9 @@ class Master(Base):
         center['freq'] = self.frequence
         return center
 
-    def __del__(self):
-        self.cursor.close()  # 关闭游标
-        self.db.close()     # 关闭数据库连接
+    # def __del__(self):
+    #     self.cursor.close()  # 关闭游标
+    #     self.db.close()     # 关闭数据库连接
 
     # init_room
 

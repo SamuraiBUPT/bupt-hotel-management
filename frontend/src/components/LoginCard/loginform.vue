@@ -74,6 +74,7 @@ export default {
           console.log(res);
           if (res.data.status == 200) {
             console.log('login success');
+            console.log(res.data.user)
             this.$store.commit('setLogin', res.data.user);
             this.redirectUser();
           }
