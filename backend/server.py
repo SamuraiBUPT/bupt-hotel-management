@@ -61,7 +61,7 @@ def login():
     return jsonify({'identity': MASTER.login(req['account'], req['password']),
                     'status': 200})
 
-@app.route('/rooms/checkIn', methods=['POST'])
+@app.route('/api/rooms/checkIn', methods=['POST'])
 def checkIn():
     req = request.get_json(force=True)
     print(req)

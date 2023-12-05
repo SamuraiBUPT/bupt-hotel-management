@@ -12,7 +12,8 @@
           :key="index"  
           style="width: 200px; margin: 6px; padding: 0;"  
         >  
-          <RoomGrid :room_id="room.id" :cost="room.cost" :state="room.state" style="margin: 0; padding: 0;" />  
+          <RoomGrid :room_id="room.id" :cost="room.cost" :state="room.state" :role="userRole" 
+          style="margin: 0; padding: 0;" />  
         </div>  
       </el-container>
     </el-container>  
@@ -25,6 +26,11 @@ import RoomGrid from '../../components/RoomGrid/roomgrid.vue'
 import ManagerHeader from '../../components/ManagerHeader/managerheader.vue'
 export default {
   name: 'PanelView',
+  computed: {
+    userRole() {
+      return this.$store.state.user;
+    }
+  },
   data() {
     return {
       identity: {identity:"前台", total: 36, num: 34},

@@ -6,6 +6,53 @@
     <div class="text item" style="padding: 5px;">Cost: {{ cost }}</div>
     <div class="text item" style="padding: 5px;">state: {{ state }}</div>
   </el-card>
+
+    <!-- 对话框 -->
+  <el-dialog
+    v-model="dialogVisible"
+    title="详情"
+    width="55%"
+  >
+    <div v-if="state !== 'empty'" style="max-height: 400px; overflow-y: auto;">
+      <table>
+        <!-- 表头 -->
+        <tr>
+          <th style="width: 80px">序号</th>
+          <th style="width: 80px">房间号</th>
+          <th style="width: 200px">请求时间</th>
+          <th style="width: 200px">服务开始时间</th>
+          <th style="width: 200px">服务结束时间</th>
+          <th style="width: 100px">服务时长</th>
+          <th style="width: 80px">风速</th>
+          <th style="width: 100px">当前费用</th>
+          <th style="width: 80px">费率</th>
+        </tr>
+        <tr v-for="record in records" :key="record.id">
+          <td style="width: 80px; text-align: center;">{{ record.id }}</td>
+          <td style="width: 80px; text-align: center;">{{record.room_id}}</td>
+          <td style="width: 200px; text-align: center;">{{record.req_date_time}}</td>
+          <td style="width: 200px; text-align: center;">{{record.serve_start_time}}</td>
+          <td style="width: 200px; text-align: center;">{{record.serve_end_time}}</td>
+          <td style="width: 100px; text-align: center;">{{record.serve_time}}</td>
+          <td style="width: 80px; text-align: center;">{{record.wind}}</td>
+          <td style="width: 100px; text-align: center;">{{record.current_bill}}</td>
+          <td style="width: 80px; text-align: center;">{{record.rate}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- 结账 -->
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="checkout">
+          {{ state === 'empty' ? '入住' : '结账' }}
+        </el-button>
+        <el-button @click="dialogVisible = false">关闭</el-button>
+      </span>
+    </template>
+  </el-dialog>
+
+
 </template>
 
 <script>
@@ -15,17 +62,21 @@ export default {
     room_id: Number,
     cost: Number,
     state: String,
+    role: String,
   },
   data() {
     return {
-      isHovered: false
+      isHovered: false,
+      dialogVisible: false,
+      records: [],
     }
   },
   methods: {
     OfferDetail() {
+      this.dialogVisible = true;
       console.log("OfferDetail");
 
-      const records = [
+      this.records = [
         { 
           id: 1, room_id: this.room_id, 
           req_date_time: '2023-01-01 13:26:24', serve_start_time: '2023-01-01 13:27:24', 
@@ -42,51 +93,8 @@ export default {
         },
         // ... 更多记录 ...
       ];
-
-      const tableHtml = `
-        <table style="width: 100%;">
-          <tr>
-            <th>序号</th>
-            <th>房间号</th>
-            <th>请求时间</th>
-            <th>服务开始时间</th>
-            <th>服务结束时间</th>
-            <th>服务时长</th>
-            <th>风速</th>
-            <th>当前费用</th>
-            <th>费率</th>
-          </tr>
-          ${records.map(record => `
-            <tr>
-              <td>${record.id}</td>
-              <td>${record.room_id}</td>
-              <td>${record.req_date_time}</td>
-              <td>${record.serve_start_time}</td>
-              <td>${record.serve_end_time}</td>
-              <td>${record.serve_time}</td>
-              <td>${record.wind}</td>
-              <td>${record.current_bill}</td>
-              <td>${record.rate}</td>
-            </tr>
-          `).join('')}
-        </table>
-      `;
-
-      ElMessageBox({
-        title: '详单',
-        message: tableHtml,
-        dangerouslyUseHTMLString: true,  // 允许使用 HTML 字符串
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        customClass: 'custom-message-box', // 添加自定义类名
-        customStyle: {                    // 添加自定义内联样式
-          width: '80%',                   // 增加消息框的宽度
-          // maxHeight: '600px',              // 设置最大高度
-          maxWidth: '900px',               // 设置最大宽度
-        },
-      });
-      
     },
+
     handleMouseOver() {
       this.isHovered = true;
       console.log("handleMouseOver");
@@ -94,6 +102,15 @@ export default {
     handleMouseOut() {
       this.isHovered = false;
       console.log("handleMouseOut");
+    },
+    handleConfirm() {
+      // 确认按钮的处理逻辑
+      console.log('确认操作');
+      this.dialogVisible = false; // 关闭对话框
+    },
+    checkout() {
+      // 结账按钮的处理逻辑
+      // ...
     }
   }
 }
@@ -119,21 +136,7 @@ export default {
   background-color: #d3d3d3;  
 }
 
-/* 可以根据需要添加其他样式 */
-.custom-message-box .el-message-box__content {
-  overflow: auto; /* 超出内容时显示滚动条 */
-}
 
-.custom-message-box .el-message-box__content table {
-  width: 100%; /* 表格宽度占满容器 */
-}
-
-.custom-message-box th, .custom-message-box td {
-  border: 1px solid #040101; /* 单元格边框 */
-  padding: 15px; /* 单元格内边距 */
-  text-align: center; /* 文本左对齐 */
-  min-width: 200px; /* 设置单元格的最小宽度 */
-}
 </style>
 
 
