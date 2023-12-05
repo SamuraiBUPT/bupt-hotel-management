@@ -68,15 +68,29 @@ export default {
       else {
         // api.postLogin(this.formLabelAlign);
         api.postLogin({
-          username: this.formLabelAlign.username,
+          account: this.formLabelAlign.username,
           password: this.formLabelAlign.password
         }).then(res => {
           console.log(res);
-          if (res.data.status == 200) {
+          if (res.status == 200) {
             console.log('login success');
-            console.log(res.data.user)
-            this.$store.commit('setLogin', res.data.user);
-            this.redirectUser();
+            console.log(res.data.identity)
+            let identity = res.data.identity; // str
+            let role = null;
+            if (identity == '0') {
+              // admin: 空调管理员
+              role = 'admin';
+            }
+            else if (identity == '1') {
+              // reception: 前台
+              role = 'reception';
+            }
+            else if (identity == '2') {
+              // manager: 酒店经理
+              role = 'manager';
+            }
+            this.$store.commit('setLogin', role);
+            this.redirectUser(role);
           }
           else {
             console.log('login failed');
@@ -93,8 +107,16 @@ export default {
       // console.log(code);
       this.code_value = code;
     },
-    redirectUser() {
-      const redirect = this.$route.query.redirect || '/home'; // 默认重定向到 '/home'
+    redirectUser(role) {
+      if(role == 'admin') {
+        this.$router.push('/ac');
+      }
+      else if(role == 'reception') {
+        this.$router.push('/reception');
+      }
+      else if(role == 'manager') {
+        this.$router.push('/manager');
+      }
       this.$router.push(redirect);
     }
   }

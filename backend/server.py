@@ -52,13 +52,14 @@ def handle_update_rooms():
     emit("getRooms", d)
 
 
-@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     req = request.get_json(force=True)
     print(req)
     if MASTER.login(req['account'], req['password']) == False:
         return jsonify({'identity': 9})
-    return jsonify({'identity': MASTER.login(req['account'], req['password'])})
+    return jsonify({'identity': MASTER.login(req['account'], req['password']),
+                    'status': 200})
 
 @app.route('/rooms/checkIn', methods=['POST'])
 def checkIn():

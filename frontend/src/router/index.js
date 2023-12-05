@@ -16,15 +16,15 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
-    path: "/manager",
-    name: "Manager",
-    component: () => import("../views/manager_panel/PanelView.vue"),
+    path: "/reception",
+    name: "Reception",
+    component: () => import("../views/reception_board/RecpBoardView.vue"),
     meta: { requiresAuth: true }
   },
   {
     path: "/ac",
     name: "AC",
-    component: () => import("../views/ac_panel/ACView.vue"),
+    component: () => import("../views/AC_board/ACView.vue"),
     meta: { requiresAuth: true }
   },
   {
@@ -42,7 +42,7 @@ const routes = [
   {
     path: "/ac_panel",
     name: "AC_Panel",
-    component: () => import("../views/air_mana_panel/air_mana_panel.vue"),
+    component: () => import("../views/air_panel/air_panel.vue"),
     meta: { requiresAuth: true }
   }
 ];

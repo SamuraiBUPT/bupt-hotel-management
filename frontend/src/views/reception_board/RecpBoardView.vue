@@ -3,6 +3,7 @@
     <el-aside style="height: 100%; width: 20%">  
       <MenuRight class="menu"/>  
     </el-aside>  
+    
     <el-container style="display: flex; flex-wrap: wrap; height: 100%; width: 80%; overflow: hidden;">  
       <ManagerHeader :identity="identity.identity" :num="identity.num" :total="identity.total" class="managerheader" style=" height: 10%"/>
       <el-container style="display: flex; flex-wrap: wrap; width: 800px; height: 750px; overflow: scroll;"> 
