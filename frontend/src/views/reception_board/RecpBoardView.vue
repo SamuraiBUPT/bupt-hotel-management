@@ -23,54 +23,34 @@
 import MenuRight from '../../components/MenuRight/menuright.vue'
 import RoomGrid from '../../components/RoomGrid/roomgrid.vue'
 import ManagerHeader from '../../components/ManagerHeader/managerheader.vue'
+import api from '../../api';
 export default {
   name: 'PanelView',
   data() {
     return {
-      identity: {identity:"前台", total: 36, num: 34},
-      rooms: [  
-        { id: 1, cost: 50, state: "empty" },  
-        { id: 2, cost: 60, state: "empty"  },  
-        { id: 251, cost: 70, state: " " },  
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },  
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },  
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },  
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },  
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },  
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        { id: 251, cost: 70, state: " " },
-        { id: 249, cost: 50, state: " " },  
-        { id: 250, cost: 60, state: " " },  
-        // 这里需要用数据库捕获信息 
-      ],  
+      identity: {identity:"前台", total: 0, num: 0},
+      rooms: [],  
     }
-  },
+  }, 
+  created() {  
+    api.getRoomList()  
+      .then(response => {  
+        response.data.forEach(room => {  
+          this.identity.total += 1;
+          if (room.checkin === 0) {  
+            room.state = 'empty';  
+            this.identity.num += 1;
+          }  
+          else{
+            room.state = 'occupied'
+          }
+        });  
+        this.rooms = response.data;  
+      })  
+      .catch(error => {  
+        console.log(error);  
+      });  
+  },  
   components: {
     ManagerHeader,
     MenuRight,

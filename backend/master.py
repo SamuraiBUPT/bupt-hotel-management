@@ -13,7 +13,7 @@ from mysqlTable import *
 NORMAL_TEMPERATURE = 25
 
 DATABASE_USER_NAME = "root"
-DATABASE_USER_PASSWORD = "1234" # change to your own pwd
+DATABASE_USER_PASSWORD = "13125188529Wyh10" # change to your own pwd
 DATABASE_SCHEMA = "backend" # create a db in your machine(schema), utf8, utf8_bin
 DATABASE_USER_PORT = 3306
 DATABASE_USER_HOST = "localhost"
@@ -542,15 +542,30 @@ class Master(Base):
         )  # 打开数据库连接
         cursor = db.cursor()
         lock.acquire()
-        cursor.execute("select id from slave")
+        cursor.execute("select * from slave")
         lock.release()
         db.commit()
         ret = []
         while 1:
             t = cursor.fetchone()
+            temp = {}
             if t is None:
                 break
-            ret.append(t)
+            temp = {
+                'id': t[0],
+                'name': t[1],
+                'idCard': t[2],
+                'checkInDate': t[3],
+                'cost': t[4],
+                'expectTemp': t[5],
+                'speed': t[6],
+                'temp': t[7],
+                'power': t[8],
+                'timer': t[9],
+                'haveCheckIn': t[10],
+                'showDetails': t[11]
+            }
+            ret.append(temp)
         cursor.close()
         db.close()
         return ret

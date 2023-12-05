@@ -10,6 +10,39 @@ const api = {
   },
   postLogin(data){
     return axios.post(path.login, data);
+  },
+  postCheckIn(data){
+    return axios.post(path.checkIn, data);
+  },
+  postCheckOut(data){
+    return axios.post(path.checkOut, data);
+  },
+  postTurnOn(data){
+    return axios.post(path.turnOn, data);
+  },
+  postTurnOff(data){
+    return axios.post(path.turnOff, data);
+  },
+  postSetTemperature(data){
+    return axios.post(path.setTemperature, data);
+  },
+  postSetTemperatureInit(data){
+    return axios.post(path.setTemperatureInit, data);
+  },
+  postSetSpeed(data){
+    return axios.post(path.setSpeed, data);
+  },
+  getQueryRoomInfo(){
+    return axios.get(path.queryRoomInfo);
+  },
+  postUpdateRooms(data){
+    return axios.post(path.updateRooms, data);
+  },
+  getRoomList(){
+    return axios.get(path.roomList);
+  },
+  getForm(){
+    return axios.get(path.getForm);
   }
 }
 

@@ -61,7 +61,7 @@ def login():
     return jsonify({'identity': MASTER.login(req['account'], req['password']),
                     'status': 200})
 
-@app.route('/rooms/checkIn', methods=['POST'])
+@app.route('/api/rooms/checkIn', methods=['POST'])
 def checkIn():
     req = request.get_json(force=True)
     print(req)
@@ -81,7 +81,7 @@ def checkIn():
     return req
 
 
-@app.route('/rooms/checkOut', methods=['POST'])
+@app.route('/api/rooms/checkOut', methods=['POST'])
 def checkOut():
     req = request.get_json(force=True)
     print(req)
@@ -224,7 +224,7 @@ def send_and_wait_task(t, id):
 
 
 
-@app.route('/rooms/updateRooms', methods=['POST'])
+@app.route('/api/rooms/updateRooms', methods=['POST'])
 def slave_updateRooms():
     req = request.get_json(force=True)
     for slave_state in req:
@@ -244,14 +244,14 @@ def slave_updateRooms():
 
 
 
-@app.route('/form/roomList')
+@app.route('/api/form/roomList', methods=['GET'])
 def get_room_list():
     ret = MASTER.get_room_list()
     print(ret)
     return jsonify(ret)
 
 
-@app.route('/form/rep', methods=['POST'])
+@app.route('/api/form/rep', methods=['GET'])
 def get_form():
     req = request.get_json()
     sd, ed, sr, er = req['sd'], req['ed'], req['sr'], req['er']
@@ -263,5 +263,5 @@ if __name__ == "__main__":
     th = threading.Thread(target=MASTER.background, name="我是后台线程")
     th.daemon = True
     th.start()
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    socketio.run(app, allow_unsafe_werkzeug=True, port=4000)
     print("server.py中: main 函数退出.")
