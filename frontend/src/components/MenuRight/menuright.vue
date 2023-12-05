@@ -1,44 +1,27 @@
 <template>
-  <!-- <el-radio-group v-model="isCollapse" style="margin-bottom: 20px">
-    <el-radio-button :label="false">expand</el-radio-button>
-    <el-radio-button :label="true">collapse</el-radio-button>
-  </el-radio-group> -->
   <el-menu
-    default-active="2"
+    default-active="1"
     class="el-menu-vertical-demo"
     :collapse="isCollapse"
     @open="handleOpen"
     @close="handleClose"
   >
-    <el-sub-menu index="1">
-      <template #title>
-        <el-icon><location /></el-icon>
-        <span>Navigator One</span>
-      </template>
-      <el-menu-item-group>
-        <template #title><span>Group One</span></template>
-        <el-menu-item index="1-1">item one</el-menu-item>
-        <el-menu-item index="1-2">item two</el-menu-item>
-      </el-menu-item-group>
-      <el-menu-item-group title="Group Two">
-        <el-menu-item index="1-3">item three</el-menu-item>
-      </el-menu-item-group>
-      <el-sub-menu index="1-4">
-        <template #title><span>item four</span></template>
-        <el-menu-item index="1-4-1">item one</el-menu-item>
-      </el-sub-menu>
-    </el-sub-menu>
-    <el-menu-item index="2">
+    <!-- 前台面板 -->
+    <el-menu-item index="1" @click="goToRoute('/reception')">
       <el-icon><icon-menu /></el-icon>
-      <template #title>Navigator Two</template>
+      <span slot="title">前台面板</span>
     </el-menu-item>
-    <el-menu-item index="3" disabled>
-      <el-icon><document /></el-icon>
-      <template #title>Navigator Three</template>
-    </el-menu-item>
-    <el-menu-item index="4">
+
+    <!-- 空调管理员面板 -->
+    <el-menu-item index="2" @click="goToRoute('/ac')">
       <el-icon><setting /></el-icon>
-      <template #title>Navigator Four</template>
+      <span slot="title">空调管理员面板</span>
+    </el-menu-item>
+
+    <!-- 经理面板 -->
+    <el-menu-item index="3" @click="goToRoute('/manager')">
+      <el-icon><document /></el-icon>
+      <span slot="title">经理面板</span>
     </el-menu-item>
   </el-menu>
 </template>
@@ -70,7 +53,10 @@ export default {
     },
     handleClose(key, keyPath) {
       console.log(key, keyPath)
-    }
+    },
+    goToRoute(route) {
+      this.$router.push(route);
+    },
   }
 }
 </script>
