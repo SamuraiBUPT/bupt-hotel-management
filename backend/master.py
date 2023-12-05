@@ -13,7 +13,8 @@ from mysqlTable import *
 NORMAL_TEMPERATURE = 25
 
 DATABASE_USER_NAME = "root"
-DATABASE_USER_PASSWORD = "13125188529Wyh10" # change to your own pwd
+# DATABASE_USER_PASSWORD = "13125188529Wyh10" # change to your own pwd
+DATABASE_USER_PASSWORD = "1234"
 DATABASE_SCHEMA = "backend" # create a db in your machine(schema), utf8, utf8_bin
 DATABASE_USER_PORT = 3306
 DATABASE_USER_HOST = "localhost"

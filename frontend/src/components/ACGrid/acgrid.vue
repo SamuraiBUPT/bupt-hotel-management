@@ -1,12 +1,29 @@
 <template>
     <el-card @click="OfferDetail" @mouseover="handleMouseOver" @mouseout="handleMouseOut"
-    :class="{hovered: isHovered, 'red-bg': state === 'error', 'green-bg': state === 'working'}" style="width: 200px; height: 150px;">
+    :class="{hovered: isHovered, 'red-bg': state === 'error', 'green-bg': state === 'working'}" 
+    style="width: 200px; height: 150px;">
       <div class="text item" style="padding: 5px;">Room ID: {{ room_id }}</div>
       <div class="text item" style="padding: 5px;">temperature: {{ room_id }}</div>
       <div class="text item" style="padding: 5px;">wind speed: {{ room_id }}</div>
       <div class="text item" style="padding: 5px;">state: {{ state }}</div>
     </el-card>
-  </template>
+
+
+  <el-dialog
+    v-model="dialogVisible"
+    title="详情"
+    width="55%"
+  >
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button type="primary" @click="checkout">
+          报修
+        </el-button>
+        <el-button @click="dialogVisible = false">关闭</el-button>
+      </span>
+    </template>
+  </el-dialog>  
+</template>
   
   <script>
   export default {
@@ -16,12 +33,14 @@
     },
     data() {
       return {
-        isHovered: false
+        isHovered: false,
+        dialogVisible: false,
       }
     },
     methods: {
       OfferDetail() {
         console.log("OfferDetail");
+        this.dialogVisible = true;
       },
       handleMouseOver() {
         this.isHovered = true;

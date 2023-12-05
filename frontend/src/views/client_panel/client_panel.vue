@@ -44,7 +44,15 @@
 
     <!-- 第二行，一个开机/关机按钮 -->
     <div class="row">
-        <el-button :class="buttonClass" @click="togglePower">{{ powerButtonLabel }}</el-button>
+        <el-form ref="form1" :model="form1" inline>
+            <el-form-item label="房间号">
+                <el-input v-model="form1.field1" style="width: 200px;"></el-input>
+            </el-form-item>
+            <el-form-item>
+                <el-button :class="buttonClass" @click="togglePower">{{ powerButtonLabel }}</el-button>
+            </el-form-item>
+        </el-form>
+        <!-- <el-button :class="buttonClass" @click="togglePower">{{ powerButtonLabel }}</el-button> -->
     </div>
 
     <!-- 第三、四行，表单和按钮 -->
@@ -79,9 +87,13 @@
 </template>
 
 <script>
+import api from '../../api';
 export default {
 data() {
     return {
+        form1: {
+            field1: ''
+        },
         form2: {
             field2: ''
         },
@@ -131,7 +143,31 @@ methods: {
             this.setWindSpeed = 2;
             this.airConditioningCost = 100;
         }, 1000);
+
+        // 在这里，我们首先的逻辑是向后端告知我们打开了空调，然后后端返回给我们一个对象，包含了空调的信息
+        this.submitForm('form1');
     },
+    submitForm(form_name) {
+        if(form_name === "form1") {
+            api.postTurnOn({
+                room_number: this.form1.field1
+            }).then(res => {
+                console.log(res);
+                if (res.status == 200) {
+                    console.log('turn on success');
+                    console.log(res.data);
+                }
+            }).catch(err => {
+                console.log(err);
+                console.log('turn on failed');
+                alert("开机失败，请检查房间号是否正确！");
+            });
+        } else if (form_name === "form2") {
+
+        } else if (form_name === "form3") {
+
+        }
+    }
 }
 };
 </script>
