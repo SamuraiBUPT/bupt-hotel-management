@@ -84,6 +84,7 @@
 </template>
     
 <script>
+import api from '../../api';
     export default {
     data() {
         return {
@@ -132,6 +133,7 @@
             // 您需要根据实际情况调整这个方法来适应您的后端接口
     
             // 模拟异步请求获取数据
+            
             setTimeout(() => {
                 this.currentTemperature = 24;
                 this.setTemperature = 26;

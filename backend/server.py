@@ -45,6 +45,8 @@ def home():
     return "Server Home"
 
 
+
+
 @socketio.on('update_rooms')
 def handle_update_rooms():
     d = MASTER.get_all_room()
@@ -52,14 +54,13 @@ def handle_update_rooms():
     emit("getRooms", d)
 
 
-@app.route('/api/login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     req = request.get_json(force=True)
     print(req)
     if MASTER.login(req['account'], req['password']) == False:
         return jsonify({'identity': 9})
-    return jsonify({'identity': MASTER.login(req['account'], req['password']),
-                    'status': 200})
+    return jsonify({'identity': MASTER.login(req['account'], req['password'])})
 
 @app.route('/api/rooms/checkIn', methods=['POST'])
 def checkIn():
@@ -101,7 +102,6 @@ def checkOut():
     socketio.emit("getRooms", MASTER.get_all_room())
     # 其实这个return还是会被rooms信息覆盖，走个形式
     return req
-
 # 从房间开机
 @app.route('/api/turn_on', methods=['POST'])
 def turn_on_Power():
@@ -113,11 +113,18 @@ def turn_on_Power():
     print(id)
     MASTER.slaves[id]['power'] = 1
     def task(roomid):
+        #MASTER.slaveFilpPower(str(id))
         MASTER.slaveFilpPower(str(roomid))
+
+    #MASTER.slaveFilpPower(str(req['id']))
+    print(7)
     send_and_wait_task(task, roomid)
     MASTER.respond_to_request()
     MASTER.update_state()
+    print(3)
     data = MASTER.get_one_room(req['room_number'])
+    print(4)
+    #data = MASTER.get_one_room(id)
     socketio.emit("getRooms", MASTER.get_all_room())
     return jsonify(data)
 
@@ -145,6 +152,8 @@ def expecttemp_set():
     print(req)
     roomid = int(req['room_number'])
     id = trans_roomid_to_id(roomid)
+    #roomid=trans_id_to_roomid(id)
+    # print(MASTER.slaves[id].expectTemp, type(MASTER.slaves[id].expectTemp))
     MASTER.slaves[id].expectTemp = int(req['temperature'])
     def task(roomid):
         MASTER.ExpectTemSet(str(roomid), int(req['temperature']))
@@ -163,6 +172,7 @@ def init_temp_set():
     print(req)
     roomid = int(req['room_number'])
     id = trans_roomid_to_id(roomid)
+    # print(MASTER.slaves[id].expectTemp, type(MASTER.slaves[id].expectTemp))
     MASTER.slaves[id].temp = int(req['temperature'])
     MASTER.slaves[id].init_temper = int(req['temperature'])
     def task(roomid):
@@ -211,20 +221,87 @@ def query_room_info():
     }
     return jsonify(d)
 
+# 查看房间账单
+@app.route('/api/query_room_bill', methods=['GET'])
+def query_room_bill():
+    req = request.get_json(force=True)
+    print(req)
+    roomid = int(req['room_number'])
+    data = MASTER.get_room_bill(str(roomid))
+    return jsonify(data)
+
+# 查看调度信息
+@app.route('/api/query_schedule', methods=['GET'])
+def query_schedule():
+    serving_queue = []
+    waiting_queue = []
+    schedule_all = MASTER.schedule_queue
+    blowing_list = MASTER.blowing_list
+    schedule = list(set(schedule_all) - set(blowing_list))
+    for i in schedule:
+        roomid = trans_id_to_roomid(i)
+        waiting_queue.append(roomid)
+    for i in blowing_list:
+        roomid = trans_id_to_roomid(i)
+        serving_queue.append(roomid)
+    data = {
+        'serving_queue': serving_queue,
+        'waiting_queue': waiting_queue
+    }
+    return jsonify(data)
+
+
+
+
+'''
+3️⃣ Center Part 中央空调状态
+'''
+
+
+@socketio.on('update_center')
+def handle_update_center():
+    emit("getCenter", center)
+
+
+@app.route('/center/flipPower', methods=['POST']) #电源开关
+def flipPower():
+    center['power'] = not center['power']
+    MASTER.power = not MASTER.power
+    socketio.emit("getCenter", center)
+    return jsonify(center)
+
+
+@app.route('/center/setMode', methods=['POST'])
+def setMode():
+    req = request.get_json(force=True)
+    print(req)
+    MASTER.mode = center['mode'] = req['mode']
+    #MASTER.temp = center['temp'] = 25
+    MASTER.temp = center['temp']
+
+    socketio.emit("getCenter", center)
+    return jsonify(center)
 
 
 
 def send_and_wait_task(t, id):
     def task():
+        # MASTER.signals[id].acquire()
         t(id)
+        # MASTER.signals[id].notify()
+        # MASTER.signals[id].release()
         return
+
+    # MASTER.signals[id].acquire()
     MASTER.request_queue.put(task)
+    # MASTER.signals[id].release()
+    # MASTER.signals[id].acquire()
+    # MASTER.signals[id].wait()
 
 
 
 
-
-@app.route('/api/rooms/updateRooms', methods=['POST'])
+@app.route('/rooms/updateRooms', methods=['POST'])
 def slave_updateRooms():
     req = request.get_json(force=True)
     for slave_state in req:
@@ -243,15 +320,19 @@ def slave_updateRooms():
 
 
 
+'''
+# Form Part
+'''
 
-@app.route('/api/form/roomList', methods=['GET'])
+
+@app.route('/api/roomList')
 def get_room_list():
     ret = MASTER.get_room_list()
     print(ret)
     return jsonify(ret)
 
 
-@app.route('/api/form/rep', methods=['GET'])
+@app.route('/form/rep', methods=['POST'])
 def get_form():
     req = request.get_json()
     sd, ed, sr, er = req['sd'], req['ed'], req['sr'], req['er']
@@ -263,5 +344,5 @@ if __name__ == "__main__":
     th = threading.Thread(target=MASTER.background, name="我是后台线程")
     th.daemon = True
     th.start()
-    socketio.run(app, allow_unsafe_werkzeug=True, port=4000)
+    socketio.run(app, allow_unsafe_werkzeug=True)
     print("server.py中: main 函数退出.")
