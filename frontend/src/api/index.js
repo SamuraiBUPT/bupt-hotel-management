@@ -32,8 +32,8 @@ const api = {
   postSetSpeed(data){
     return axios.post(path.setSpeed, data);
   },
-  getQueryRoomInfo(){
-    return axios.get(path.queryRoomInfo);
+  getQueryRoomInfo(data){
+    return axios.get(path.queryRoomInfo, {params: data});
   },
   postUpdateRooms(data){
     return axios.post(path.updateRooms, data);

@@ -137,15 +137,15 @@ methods: {
 
         // 模拟异步请求获取数据
         api.getQueryRoomInfo({
-                room_number: this.form1.field1
+                room_number: String(this.form1.field1)
             }).then(res => {
-                console.log(res);
-                setTimeout(() => {t
-                this.currentTemperature = res.cur_temperature;
-                this.setTemperature = res.set_temperature;
-                this.currentWindSpeed = res.speed;
-                this.setWindSpeed = res.speed;
-                this.airConditioningCost = res.bill;
+                console.log("res:", res);
+                setTimeout(() => {
+                this.currentTemperature = res.data.cur_temperature;
+                this.setTemperature = res.data.set_temperature;
+                this.currentWindSpeed = res.data.speed;
+                this.setWindSpeed = res.data.speed;
+                this.airConditioningCost = res.data.bill;
             }, 1000);
             }).catch(err => {
                 console.log(err);
@@ -187,8 +187,11 @@ methods: {
             }
         } else if (form_name === "form3") {
             if(this.isPoweredOn){
+                let speed_ = this.form3.field3;
+                // 转换为小写
+                speed_ = speed_.toLowerCase();
                 api.postSetSpeed({
-                    room_number: this.form1.field1, temperature: this.form3.field3
+                    room_number: this.form1.field1, speed: speed_
                 }).catch(err =>{
                     console.log(err);
                     console.log('set failed');

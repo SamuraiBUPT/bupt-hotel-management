@@ -6,7 +6,7 @@ for idx in range(5):
     idCard = "1234567"
     showDetails = "true"
     
-    requests.post('http://localhost:5000/api/rooms/checkIn', json={
+    requests.post('http://localhost:4000/api/rooms/checkIn', json={
         'room_number': room_number,
         'name': name,
         'idCard': idCard,

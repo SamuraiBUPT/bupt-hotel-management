@@ -182,7 +182,8 @@ def slave_set_speed():
     print(req)
     roomid = int(req['room_number'])
     id = trans_roomid_to_id((roomid))
-    MASTER.slaves[id]['speed'] = req['speed']
+    speed = req['speed'].lower()
+    MASTER.slaves[id]['speed'] = speed
 
     def task(roomid):
         MASTER.setSpeed(roomid, req['speed'])
@@ -199,14 +200,15 @@ def slave_set_speed():
 # 查看房间当前信息
 @app.route('/api/query_room_info', methods=['GET'])
 def query_room_info():
-    req = request.get_json(force=True)
-    print(req)
-    roomid = int(req['room_number'])
+    # req = request.get_json(force=True) 不能这么写
+    
+    # print(req)
+    roomid = request.args.get('room_number', default=1, type=int)  # 获取查询参数
     data = MASTER.get_one_room(str(roomid))
     d={
         'cur_temperature': data['temp'],
-        'set_temperature': data['expectTemp'],
-        'speed': data['speed'],
+        'set_temperature': int(data['expectTemp']),
+        'speed': str(data['speed']),
         'bill': data['cost']
     }
     return jsonify(d)
@@ -245,9 +247,7 @@ def slave_updateRooms():
 # 查看房间账单
 @app.route('/api/query_room_bill', methods=['GET'])
 def query_room_bill():
-    req = request.get_json(force=True)
-    print(req)
-    roomid = int(req['room_number'])
+    roomid = request.args.get('room_number', default=1, type=int)
     data = MASTER.get_room_bill(str(roomid))
     return jsonify(data)
 
@@ -271,6 +271,13 @@ def query_schedule():
     }
     return jsonify(data)
 
+# 详单
+@app.route('/api/detail_bill', methods=['GET'])
+def query_room_detail():
+    roomid = request.args.get('room_number', default=1, type=int)
+    data = MASTER.get_room_detail(str(roomid))
+    return jsonify(data)
+
 @app.route('/api/form/roomList', methods=['GET'])
 def get_room_list():
     ret = MASTER.get_room_list()
@@ -278,17 +285,13 @@ def get_room_list():
     return jsonify(ret)
 
 
-@app.route('/api/form/rep', methods=['GET'])
-def get_form():
-    req = request.get_json()
-    sd, ed, sr, er = req['sd'], req['ed'], req['sr'], req['er']
-    ret = MASTER.get_form(sd, ed, sr, er)
-    return jsonify(ret)
-
 
 if __name__ == "__main__":
     th = threading.Thread(target=MASTER.background, name="我是后台线程")
     th.daemon = True
     th.start()
     socketio.run(app, allow_unsafe_werkzeug=True, port=4000)
+    # use this on server: 
+    
+    # socketio.run(app, host='0.0.0.0', allow_unsafe_werkzeug=True, port=4000)
     print("server.py中: main 函数退出.")

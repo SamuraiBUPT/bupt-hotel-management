@@ -15,6 +15,7 @@ NORMAL_TEMPERATURE = 25
 
 DATABASE_USER_NAME = "root"
 DATABASE_USER_PASSWORD = "1234"
+# DATABASE_USER_PASSWORD = "dyz20020324"
 DATABASE_SCHEMA = "backend"
 DATABASE_USER_PORT = 3306
 DATABASE_USER_HOST = "localhost"
@@ -186,7 +187,7 @@ class Master(Base):
     # 获取当前房间的记录号
     def get_CheckRecord_Record(self, roomId: str):
         # 对于当前房间号，获取其入住状态为1的记录，即入住中的记录
-        sql = 'select Record from CheckRecord where id = %s and state =%s'
+        sql = 'select Record from checkrecord where id = %s and state =%s'
         #lock.acquire()
         self.cursor.execute(sql, (roomId, '1'))
         #print(6)
@@ -216,7 +217,7 @@ class Master(Base):
 
     # 获取当前的入住记录数
     def get_CheckRecord_count(self):
-        query = " select count(*) from CheckRecord "
+        query = " select count(*) from checkrecord "
         db = pymysql.connect(
             host=DATABASE_USER_HOST,  # 默认用主机名
             port=DATABASE_USER_PORT,
@@ -235,7 +236,7 @@ class Master(Base):
 
     # 获取操作记录记录数
     def get_OpRecord_count(self):
-        query = " select count(*) from OpRecord "
+        query = " select count(*) from oprecord "
         lock.acquire()
         self.cursor.execute(query)
         count = self.cursor.fetchone()[0]
@@ -405,7 +406,7 @@ class Master(Base):
         now_time = time.strftime('%Y-%m-%d %H:%M:%S ',time.localtime(time.time()))
         # 将slave和oprecord中的cost和wind更新
         # print("roomid = %s  wind=%s cost = %s timer = %s" %(roomId,wind, cost, run_time))
-        sql = 'insert into OpRecord(Record, roomid, time, type, old, new, wind, cost) values(%s, %s, %s, %s, %s, %s, %s, %s)'
+        sql = 'insert into oprecord(Record, roomid, time, type, old, new, wind, cost) values(%s, %s, %s, %s, %s, %s, %s, %s)'
         db = pymysql.connect(
             host=DATABASE_USER_HOST,  # 默认用主机名
             port=DATABASE_USER_PORT,
@@ -440,7 +441,7 @@ class Master(Base):
         db.commit()
         cursor.close()
         db.close()
-    def serve_done(self,roomId :str):
+    def serve_done(self, roomId :str):
         rec = room_serial_dict[str(roomId)]
         print(rec)
         sql = 'select start_time from detail where  record = %s '
@@ -507,7 +508,7 @@ class Master(Base):
         db.commit()
         #print(7)
         # 入住，check in会增加一次开房记录
-        sql = 'insert into CheckRecord(Record,idcard, id, checkInDate, checkOutDate, state) values(%s, %s, %s, %s, %s, %s)'
+        sql = 'insert into checkrecord(Record,idcard, id, checkInDate, checkOutDate, state) values(%s, %s, %s, %s, %s, %s)'
         sql1 = 'insert into bill( record, roomid,checkInDate, checkOutDate, cost) values(%s, %s, %s, %s, %s)'
         sql2 = 'insert into identity( account,password,identity) values(%s, %s, %s)'
         rec_num = self.get_CheckRecord_count()
@@ -552,7 +553,7 @@ class Master(Base):
         id = trans_roomid_to_id(roomId)
         rec_no = self.get_CheckRecord_Record(roomId)
         # 将这个记录号的状态改为离开
-        sql = 'update CheckRecord set checkOutDate=%s, state=%s where Record=%s'
+        sql = 'update checkrecord set checkOutDate=%s, state=%s where Record=%s'
         sql1 = 'update bill set checkOutDate=%s where Record=%s'
         sql2 = 'DELETE FROM identity WHERE account = %s'
         lock.acquire()
@@ -710,7 +711,9 @@ class Master(Base):
         print(res)
         if res == '0':
             # 数据库中状态变为关机就计算费用，同时清零原计时，后台运行的线程会停止计时
+            lock.acquire()
             self.update_cost_and_wind(roomId, '1', '1', '0')
+            lock.release()
             print(53)
             self.update_slave_timer(roomId, 0)
             self.update_slave_min(roomId, 0)
@@ -760,7 +763,7 @@ class Master(Base):
         self.db.commit()
 
     def get_OpRecord_id(self, Record: str):
-        sql = 'select id from CheckRecord where Record = {}'.format(Record)
+        sql = 'select id from checkrecord where Record = {}'.format(Record)
         lock.acquire()
         self.cursor.execute(sql)
         lock.release()
@@ -770,7 +773,7 @@ class Master(Base):
 
     def get_room_list(self):
         db = pymysql.connect(
-            host=DATABASE_USER_HOST,  # 默认用主机名
+        host=DATABASE_USER_HOST,  # 默认用主机名
             port=DATABASE_USER_PORT,
             user=DATABASE_USER_NAME,  # 默认用户名
             password=DATABASE_USER_PASSWORD,  # mysql密码
@@ -779,22 +782,37 @@ class Master(Base):
         )  # 打开数据库连接
         cursor = db.cursor()
         lock.acquire()
-        cursor.execute("select id from slave")
+        cursor.execute("select * from slave")
         lock.release()
         db.commit()
         ret = []
         while 1:
             t = cursor.fetchone()
+            temp = {}
             if t is None:
                 break
-            ret.append(t)
+            temp = {
+                'id': t[0],
+                'name': t[1],
+                'idCard': t[2],
+                'checkInDate': t[3],
+                'cost': t[4],
+                'expectTemp': t[5],
+                'speed': t[6],
+                'temp': t[7],
+                'power': t[8],
+                'timer': t[9],
+                'haveCheckIn': t[10],
+                'showDetails': t[11]
+            }
+            ret.append(temp)
         cursor.close()
         db.close()
         return ret
 
     # 获取表单staring date,ending date,starting room,ending room
     def get_form(self, sd, ed, sr, er):
-        sql = "select * from OpRecord where time between \"{}\" and \"{}\"".format(sd, ed)
+        sql = "select * from oprecord where time between \"{}\" and \"{}\"".format(sd, ed)
         self.cursor.execute(sql)
         ret = []
         all_record = self.cursor.fetchall()

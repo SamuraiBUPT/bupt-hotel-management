@@ -66,55 +66,55 @@ export default {
         return;
       }
       else {
-        api.postLogin({
-          account: this.formLabelAlign.username,
-          password: this.formLabelAlign.password
-        }).then(res => {
-          console.log(res);
-          if (res.status == 200) {
-            console.log('login success');
-            console.log(res.data.identity)
-            let identity = res.data.identity; // str
-            let role = null;
-            if (identity == '0') {
-              // admin: 空调管理员
-              role = 'admin';
-            }
-            else if (identity == '1') {
-              // reception: 前台
-              role = 'reception';
-            }
-            else if (identity == '2') {
-              // manager: 酒店经理
-              role = 'manager';
-            }
-            this.$store.commit('setLogin', role);
-            this.redirectUser(role);
+        // api.postLogin({
+        //   account: this.formLabelAlign.username,
+        //   password: this.formLabelAlign.password
+        // }).then(res => {
+        //   console.log(res);
+        //   if (res.status == 200) {
+        //     console.log('login success');
+        //     console.log(res.data.identity)
+        //     let identity = res.data.identity; // str
+        //     let role = null;
+        //     if (identity == '0') {
+        //       // admin: 空调管理员
+        //       role = 'admin';
+        //     }
+        //     else if (identity == '1') {
+        //       // reception: 前台
+        //       role = 'reception';
+        //     }
+        //     else if (identity == '2') {
+        //       // manager: 酒店经理
+        //       role = 'manager';
+        //     }
+        //     this.$store.commit('setLogin', role);
+        //     this.redirectUser(role);
+        //   }
+        //   else {
+        //     console.log('login failed');
+        //     ElMessage.error("用户名或密码错误！");
+        //     this.$refs.ValidCodeRef.refreshCode();
+        //     return;
+        //   }
+        // }).catch(err => {
+        //   console.log(err);
+        // });
+        let role = null;
+          if (this.formLabelAlign.username == 'admin') {
+            // admin: 空调管理员
+            role = 'admin';
           }
-          else {
-            console.log('login failed');
-            ElMessage.error("用户名或密码错误！");
-            this.$refs.ValidCodeRef.refreshCode();
-            return;
+          else if (this.formLabelAlign.username == 'reception') {
+            // reception: 前台
+            role = 'reception';
           }
-        }).catch(err => {
-          console.log(err);
-        });
-        // let role = null;
-        //   if (this.formLabelAlign.username == 'admin') {
-        //     // admin: 空调管理员
-        //     role = 'admin';
-        //   }
-        //   else if (this.formLabelAlign.username == 'reception') {
-        //     // reception: 前台
-        //     role = 'reception';
-        //   }
-        //   else if (this.formLabelAlign.username == 'manager') {
-        //     // manager: 酒店经理
-        //     role = 'manager';
-        //   }
-        //   this.$store.commit('setLogin', role);
-        //   this.redirectUser(role);
+          else if (this.formLabelAlign.username == 'manager') {
+            // manager: 酒店经理
+            role = 'manager';
+          }
+          this.$store.commit('setLogin', role);
+          this.redirectUser(role);
       }
     },
     getCode(code) {
