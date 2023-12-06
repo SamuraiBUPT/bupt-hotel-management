@@ -105,11 +105,11 @@ export default {
             // admin: 空调管理员
             role = 'admin';
           }
-          else if (identity == 'reception') {
+          else if (this.formLabelAlign.username == 'reception') {
             // reception: 前台
             role = 'reception';
           }
-          else if (identity == 'manager') {
+          else if (this.formLabelAlign.username == 'manager') {
             // manager: 酒店经理
             role = 'manager';
           }
@@ -131,7 +131,6 @@ export default {
       else if(role == 'manager') {
         this.$router.push('/manager');
       }
-      this.$router.push(redirect);
     }
   }
 }

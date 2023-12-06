@@ -242,7 +242,34 @@ def slave_updateRooms():
     return jsonify([s.__dict__ for s in MASTER.slaves])
 
 
+# 查看房间账单
+@app.route('/api/query_room_bill', methods=['GET'])
+def query_room_bill():
+    req = request.get_json(force=True)
+    print(req)
+    roomid = int(req['room_number'])
+    data = MASTER.get_room_bill(str(roomid))
+    return jsonify(data)
 
+# 查看调度信息
+@app.route('/api/query_schedule', methods=['GET'])
+def query_schedule():
+    serving_queue = []
+    waiting_queue = []
+    schedule_all = MASTER.schedule_queue
+    blowing_list = MASTER.blowing_list
+    schedule = list(set(schedule_all) - set(blowing_list))
+    for i in schedule:
+        roomid = trans_id_to_roomid(i)
+        waiting_queue.append(roomid)
+    for i in blowing_list:
+        roomid = trans_id_to_roomid(i)
+        serving_queue.append(roomid)
+    data = {
+        'serving_queue': serving_queue,
+        'waiting_queue': waiting_queue
+    }
+    return jsonify(data)
 
 @app.route('/api/form/roomList', methods=['GET'])
 def get_room_list():
