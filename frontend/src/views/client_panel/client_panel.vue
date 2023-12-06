@@ -136,13 +136,23 @@ methods: {
         // 您需要根据实际情况调整这个方法来适应您的后端接口
 
         // 模拟异步请求获取数据
-        setTimeout(() => {
-            this.currentTemperature = 24;
-            this.setTemperature = 26;
-            this.currentWindSpeed = 3;
-            this.setWindSpeed = 2;
-            this.airConditioningCost = 100;
-        }, 1000);
+        api.getQueryRoomInfo({
+                room_number: this.form1.field1
+            }).then(res => {
+                console.log(res);
+                setTimeout(() => {t
+                this.currentTemperature = res.cur_temperature;
+                this.setTemperature = res.set_temperature;
+                this.currentWindSpeed = res.speed;
+                this.setWindSpeed = res.speed;
+                this.airConditioningCost = res.bill;
+            }, 1000);
+            }).catch(err => {
+                console.log(err);
+                console.log('error');
+                alert("error！");
+            });
+        
 
         // 在这里，我们首先的逻辑是向后端告知我们打开了空调，然后后端返回给我们一个对象，包含了空调的信息
         this.submitForm('form1');
@@ -153,7 +163,7 @@ methods: {
                 room_number: this.form1.field1
             }).then(res => {
                 console.log(res);
-                if (res.status == 200) {
+                if (res) {
                     console.log('turn on success');
                     console.log(res.data);
                 }
@@ -163,9 +173,31 @@ methods: {
                 alert("开机失败，请检查房间号是否正确！");
             });
         } else if (form_name === "form2") {
-
+            if(this.isPoweredOn){
+                api.postSetTemperature({
+                    room_number: this.form1.field1, temperature: this.form2.field2
+                }).catch(err =>{
+                    console.log(err);
+                    console.log('set failed');
+                    alert("请检查房间号是否正确！");
+                });
+            }
+            else{
+                alert("请先开机");
+            }
         } else if (form_name === "form3") {
-
+            if(this.isPoweredOn){
+                api.postSetSpeed({
+                    room_number: this.form1.field1, temperature: this.form3.field3
+                }).catch(err =>{
+                    console.log(err);
+                    console.log('set failed');
+                    alert("请检查房间号是否正确！");
+                });
+            }
+            else{
+                alert("请先开机");
+            }
         }
     }
 }
