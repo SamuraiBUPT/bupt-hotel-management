@@ -217,3 +217,4 @@ if __name__ == '__main__':
     df.to_excel(writer, sheet_name='测试用例', index=False)
     roomInfo.to_excel(writer, sheet_name='房间信息', index=False)
     scheduleInfo.to_excel(writer, sheet_name='调度信息', index=False)
+    writer.save()
