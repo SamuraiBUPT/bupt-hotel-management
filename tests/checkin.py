@@ -1,5 +1,7 @@
 import requests
 
+init_temp = [32, 28, 30, 29, 35]
+
 for idx in range(5):
     room_number = idx + 101
     name = "test" + str(idx)
@@ -11,4 +13,8 @@ for idx in range(5):
         'name': name,
         'idCard': idCard,
         '_showDetails': showDetails
+    })
+    requests.post('http://localhost:4000/api/setTemperature_init', json={
+        'room_number': room_number,
+        'temperature': init_temp[idx]
     })

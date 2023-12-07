@@ -422,6 +422,18 @@ class Master(Base):
         cursor.execute("update slave set cost=%s where id=%s", (round(cost, 2), roomId))
         cursor.execute("update bill set cost=%s where roomid=%s", (round(cost, 2), roomId))
         db.commit()
+        
+        if typ == '1' and new == '0':
+            sql2 = 'select timer,min,speed from slave where  id = %s '
+            cursor.execute(sql2, roomId)
+            res = cursor.fetchone()
+            tim = int(res[0])
+            min = int(res[1])
+            serve_time = 60 * min + tim
+            sql1 = 'update detail set serve_time=%s,cost=%s,have_done=%s  where room_id = %s and have_done = %s'
+            cursor.execute(sql1, (serve_time, cost, '1', roomId, '0'))
+            db.commit()
+        
         cursor.close()
         db.close()
         print(7)
@@ -441,9 +453,8 @@ class Master(Base):
         db.commit()
         cursor.close()
         db.close()
-    def serve_done(self, roomId :str):
+    def serve_done(self,roomId :str):
         rec = room_serial_dict[str(roomId)]
-        print(rec)
         sql = 'select start_time from detail where  record = %s '
         db = pymysql.connect(
             host=DATABASE_USER_HOST,  # 默认用主机名
@@ -466,7 +477,7 @@ class Master(Base):
         res = cursor.fetchone()
         tim = int(res[0])
         min = int(res[1])
-        serve_time = 60*min+tim
+        serve_time = 60 * min + tim
         speed = res[2]
         current_power = 0
         if speed == 'high':
@@ -476,9 +487,17 @@ class Master(Base):
         if speed == 'low':
             current_power = (1 / 3) * float(serve_time) / 60
         cost = self.rate * round(float(current_power), 2)
-        sql1 = 'update detail set end_time=%s, serve_time=%s,cost=%s,have_done=%s  where room_id = %s and have_done = %s'
+        print("cost:",cost)
+        sql0 = "SELECT cost FROM detail WHERE record = %s"
+        sql1 = 'update detail set end_time=%s, serve_time=%s,cost=%s,have_done=%s  where record = %s'
+        sql2 = 'update detail set end_time=%s,have_done=%s  where record = %s'
         lock.acquire()
-        cursor.execute(sql1, (end_time,serve_time,cost,'1',roomId,'0'))
+        cursor.execute(sql0,rec)
+        result = cursor.fetchone()[0]
+        if result != None:
+            cursor.execute(sql2, (end_time,  '1', rec))
+        else:
+            cursor.execute(sql1, (end_time, serve_time, cost, '1', rec))
         lock.release()
         db.commit()
         cursor.close()

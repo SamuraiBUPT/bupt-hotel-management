@@ -28,16 +28,20 @@ function errorHandle(status, other) {
 //   timeout: 5000
 // });
 
-// // 设置拦截器
-// axios.interceptors.request.use(
-//   config => {
-//     if (config.method === "post") {
-//       config.data = qs.stringify(config.data);
-//     }
-//     return config;
-//   },
-//   error => Promise.reject(error)
-// );
+// 设置拦截器
+axios.interceptors.request.use(
+  config => {
+    if (config.method === "post") {
+      // let lidongyuan = true;
+      let lidongyuan = false;
+      if (lidongyuan) {
+        config.url = config.url + '/';
+      }
+    }
+    return config;
+  },
+  error => Promise.reject(error)
+);
 
 axios.interceptors.response.use(
   response => {

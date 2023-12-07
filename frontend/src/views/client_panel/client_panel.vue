@@ -119,6 +119,15 @@ computed: {
         return this.isPoweredOn ? '关机' : '开机';
     }
 },
+created() {
+    
+},
+beforeDestroy() {
+    // 组件销毁时清理定时器
+    if (this.intervalId) {
+        clearInterval(this.intervalId);
+    }
+},
 methods: {
     togglePower() {
         // 切换开关机状态
@@ -126,8 +135,76 @@ methods: {
         console.log(this.isPoweredOn ? "开机" : "关机");
         // 如果开机，则请求空调信息
         if (this.isPoweredOn) {
+            this.intervalId = setInterval(this.fetchRoomInfo, 5000);
+            // this.intervalId2 = setInterval(this.send_cur_temperature, 5000);
             this.fetchAirConditioningInfo();
         }
+        else {
+            this.turnOFF();
+        }
+        this.initialTime = new Date();
+        this.currentTime = new Date();
+        const room1_init = 32;
+        const room2_init = 28;
+        const room3_init = 30;
+        const room4_init = 29;
+        const room5_init = 31;
+        const temp_init_dict = {
+            "101": room1_init,
+            "102": room2_init,
+            "103": room3_init,
+            "104": room4_init,
+            "105": room5_init
+        };
+        this.currTemp = temp_init_dict[this.form1.field1];
+        console.log("当前温度：", this.currTemp)
+
+        // 每秒更新当前时间并重新计算温度
+        this.timer = setInterval(() => {
+            this.currentTime = new Date();
+            this.calculateTemperature();
+        }, 10000);
+    },
+    calculateTemperature() {
+        // const minutesPassed = (this.currentTime - this.initialTime) / 10000; // 计算经过的分钟数
+        
+        if (this.currTemp == this.setTemperature) {
+            return;
+        }
+        else if (this.currTemp > this.setTemperature) {
+            this.currTemp -= 0.5 ;
+        }
+        else {
+            this.currTemp += 0.5 ;
+        }
+        console.log("当前温度：", this.currTemp)
+        this.send_cur_temperature();
+    },
+    fetchRoomInfo(){
+        api.getQueryRoomInfo({
+            room_number: this.form1.field1
+        }).then(res => {
+            console.log("res:", res);
+            // 更新数据
+            // this.currentTemperature = res.data.cur_temperature;
+            this.currentTemperature = this.currTemp;
+            this.setTemperature = res.data.set_temperature;
+            this.currentWindSpeed = res.data.speed;
+            this.setWindSpeed = res.data.speed;
+            this.airConditioningCost = res.data.bill;
+        }).catch(err => {
+            console.error('Error fetching room info:', err);
+            alert("error！");
+        });
+    },
+    send_cur_temperature() {
+        api.postCurTemperature({
+            room_number: this.form1.field1, cur_temp: this.currTemp
+        }).catch(err => {
+            console.log(err);
+            console.log('send failed');
+            alert("请检查房间号是否正确！");
+        });
     },
     fetchAirConditioningInfo() {
         // 这里是请求后端获取空调信息的逻辑
@@ -136,24 +213,8 @@ methods: {
         // 您需要根据实际情况调整这个方法来适应您的后端接口
 
         // 模拟异步请求获取数据
-        api.getQueryRoomInfo({
-                room_number: String(this.form1.field1)
-            }).then(res => {
-                console.log("res:", res);
-                setTimeout(() => {
-                this.currentTemperature = res.data.cur_temperature;
-                this.setTemperature = res.data.set_temperature;
-                this.currentWindSpeed = res.data.speed;
-                this.setWindSpeed = res.data.speed;
-                this.airConditioningCost = res.data.bill;
-            }, 1000);
-            }).catch(err => {
-                console.log(err);
-                console.log('error');
-                alert("error！");
-            });
+        this.fetchRoomInfo();
         
-
         // 在这里，我们首先的逻辑是向后端告知我们打开了空调，然后后端返回给我们一个对象，包含了空调的信息
         this.submitForm('form1');
     },
@@ -173,35 +234,40 @@ methods: {
                 alert("开机失败，请检查房间号是否正确！");
             });
         } else if (form_name === "form2") {
-            if(this.isPoweredOn){
-                api.postSetTemperature({
-                    room_number: this.form1.field1, temperature: this.form2.field2
-                }).catch(err =>{
-                    console.log(err);
-                    console.log('set failed');
-                    alert("请检查房间号是否正确！");
-                });
-            }
-            else{
-                alert("请先开机");
-            }
+            api.postSetTemperature({
+                room_number: this.form1.field1, temperature: parseInt(this.form2.field2)
+            }).catch(err =>{
+                console.log(err);
+                console.log('set failed');
+                alert("请检查房间号是否正确！");
+            });
         } else if (form_name === "form3") {
-            if(this.isPoweredOn){
-                let speed_ = this.form3.field3;
-                // 转换为小写
-                speed_ = speed_.toLowerCase();
-                api.postSetSpeed({
-                    room_number: this.form1.field1, speed: speed_
-                }).catch(err =>{
-                    console.log(err);
-                    console.log('set failed');
-                    alert("请检查房间号是否正确！");
-                });
-            }
-            else{
-                alert("请先开机");
-            }
+            let speed_ = this.form3.field3;
+            // 转换为小写
+            speed_ = speed_.toLowerCase();
+            api.postSetSpeed({
+                room_number: this.form1.field1, speed: speed_
+            }).catch(err =>{
+                console.log(err);
+                console.log('set failed');
+                alert("请检查房间号是否正确！");
+            });
         }
+    },
+    turnOFF() {
+        api.postTurnOff({
+            room_number: this.form1.field1
+        }).then(res => {
+            console.log(res);
+            if (res) {
+                console.log('turn off success');
+                console.log(res.data);
+            }
+        }).catch(err => {
+            console.log(err);
+            console.log('turn off failed');
+            alert("关机失败，请检查房间号是否正确！");
+        });
     }
 }
 };

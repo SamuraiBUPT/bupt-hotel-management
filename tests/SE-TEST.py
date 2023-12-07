@@ -90,7 +90,7 @@ scheduleInfo = None
 def thread_query(actions):
     global time_lock, condition
     try:
-        api_room_info = '/api/query_room_info'
+        api_room_info = '/api/query_room_info/'
         api_schedule = '/api/query_schedule'
         df_rooms = pd.DataFrame()
         df_schedule = pd.DataFrame()
@@ -104,10 +104,10 @@ def thread_query(actions):
                     'room_number': room_id
                 }
                 try:
-                    res = requests.get(url + ':' + str(port) + api_room_info, json=params, timeout=5)
+                    res = requests.get(url + ':' + str(port) + api_room_info, params=params, timeout=5)
                 except requests.Timeout:
                     print("请求超时,重新发送")
-                    res = requests.get(url + ':' + str(port) + api_room_info, json=params)
+                    res = requests.get(url + ':' + str(port) + api_room_info, params=params)
                 data_dict = res.json()
                 # convert to a dataframe
                 data = [data_dict]
@@ -155,7 +155,7 @@ if __name__ == '__main__':
     parser.add_argument('-p',
                         '--port', 
                         type=int, 
-                        default=5000)
+                        default=4000)
     args = parser.parse_args()
 
     url = args.url

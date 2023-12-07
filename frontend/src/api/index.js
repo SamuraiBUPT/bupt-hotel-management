@@ -19,18 +19,22 @@ const api = {
   },
   postTurnOn(data){
     return axios.post(path.turnOn, data);
+    // return axios.post(path.turnOn + '/', data);
   },
   postTurnOff(data){
     return axios.post(path.turnOff, data);
+    // return axios.post(path.turnOff + '/', data);
   },
   postSetTemperature(data){
     return axios.post(path.setTemperature, data);
-  },
-  postSetTemperatureInit(data){
-    return axios.post(path.setTemperatureInit, data);
+    // return axios.post(path.setTemperature + '/', data);
   },
   postSetSpeed(data){
     return axios.post(path.setSpeed, data);
+    // return axios.post(path.setSpeed + '/', data);
+  },
+  postSetTemperatureInit(data){
+    return axios.post(path.setTemperatureInit, data);
   },
   getQueryRoomInfo(data){
     return axios.get(path.queryRoomInfo, {params: data});
@@ -43,6 +47,9 @@ const api = {
   },
   getForm(){
     return axios.get(path.getForm);
+  },
+  postCurTemperature(data){
+    return axios.post(path.send_cur_temp, data);
   }
 }
 

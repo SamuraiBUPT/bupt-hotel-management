@@ -34,7 +34,7 @@ class Slave(Base):
         self.name = ''
         self.checkInDate = ''
         self.cost = 0
-        self.expectTemp = 20
+        self.expectTemp = 25
         self.speed = 'medium'
         self.temp = 30
         self.power = False

@@ -198,7 +198,7 @@ def slave_set_speed():
 
 
 # 查看房间当前信息
-@app.route('/api/query_room_info', methods=['GET'])
+@app.route('/api/query_room_info/', methods=['GET'])
 def query_room_info():
     # req = request.get_json(force=True) 不能这么写
     
