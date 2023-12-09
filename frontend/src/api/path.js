@@ -14,7 +14,9 @@ const base = {
   updateRooms: "/api/rooms/updateRooms",
   roomList: "/api/form/roomList",
   getForm: "/api/form/rep",
-  send_cur_temp: "/api/send_current_temp"
+  send_cur_temp: "/api/send_current_temp",
+  detail: "/api/detail_bill",
+  bill: "/api/query_room_bill"
 }
 
 export default base;

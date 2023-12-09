@@ -50,6 +50,12 @@ const api = {
   },
   postCurTemperature(data){
     return axios.post(path.send_cur_temp, data);
+  },
+  getDetail(data){
+    return axios.get(path.detail, {params: data});
+  },
+  getBill(data){
+    return axios.get(path.bill, {params: data});
   }
 }
 

@@ -11,7 +11,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="详情"
-    width="55%"
+    width="65%"
   >
     <div v-if="state !== 'empty'" style="max-height: 400px; overflow-y: auto;">
       <table>
@@ -22,7 +22,7 @@
           <th style="width: 200px">请求时间</th>
           <th style="width: 200px">服务开始时间</th>
           <th style="width: 200px">服务结束时间</th>
-          <th style="width: 100px">服务时长</th>
+          <th style="width: 150px">服务时长(分钟)</th>
           <th style="width: 80px">风速</th>
           <th style="width: 100px">当前费用</th>
           <th style="width: 80px">费率</th>
@@ -33,7 +33,7 @@
           <td style="width: 200px; text-align: center;">{{record.req_date_time}}</td>
           <td style="width: 200px; text-align: center;">{{record.serve_start_time}}</td>
           <td style="width: 200px; text-align: center;">{{record.serve_end_time}}</td>
-          <td style="width: 100px; text-align: center;">{{record.serve_time}}</td>
+          <td style="width: 150px; text-align: center;">{{record.serve_time / 60}}</td>
           <td style="width: 80px; text-align: center;">{{record.wind}}</td>
           <td style="width: 100px; text-align: center;">{{record.current_bill}}</td>
           <td style="width: 80px; text-align: center;">{{record.rate}}</td>
@@ -57,6 +57,7 @@
 
 <script>
 import { ElMessageBox } from 'element-plus';
+import api from '../../api';
 export default {
   props: {
     room_id: Number,
@@ -76,23 +77,30 @@ export default {
       this.dialogVisible = true;
       console.log("OfferDetail");
 
-      this.records = [
-        { 
-          id: 1, room_id: this.room_id, 
-          req_date_time: '2023-01-01 13:26:24', serve_start_time: '2023-01-01 13:27:24', 
-          serve_end_time: '2023-01-01 18:27:24', 
-          serve_time: '16.5',
-          wind: 'Low', current_bill: '100.1', rate: '1.0' 
-        },
-        { 
-          id: 2, room_id: this.room_id, 
-          req_date_time: '2023-01-01 13:26:24', serve_start_time: '2023-01-01 13:26:24', 
-          serve_end_time: '2023-01-01 13:26:24', 
-          serve_time: '27.8',
-          wind: 'Low', current_bill: '100.1', rate: '1.0' 
-        },
-        // ... 更多记录 ...
-      ];
+      this.records = [];
+
+      api.getDetail({
+        room_number: this.room_id,
+      }).then(res => {
+        console.log(res);
+          let data_length = res.data.length;
+          for(let i = 0; i < data_length; i++) {
+            let record = {
+              id: res.data[i].record,
+              room_id: res.data[i].room_id,
+              req_date_time: res.data[i].query_time,
+              serve_start_time: res.data[i].start_time,
+              serve_end_time: res.data[i].end_time,
+              serve_time: res.data[i].serve_time,
+              wind: res.data[i].speed,
+              current_bill: this.Fixed(res.data[i].cost, 1),
+              rate: res.data[i].rate,
+            };
+            this.records.push(record);
+          }
+      }).catch(err => {
+        console.log(err);
+      });
     },
 
     handleMouseOver() {
@@ -110,8 +118,58 @@ export default {
     },
     checkout() {
       // 结账按钮的处理逻辑
-      // ...
-    }
+      api.postCheckOut({
+        room_number: this.room_id,
+      }).then(res => {
+        console.log(res);
+        if (res.status === 200) {
+          console.log("checkout yes");
+        }
+        else {
+          console.log("checkout no");
+        }
+      }).catch(err => {
+        console.log(err);
+      });
+
+      api.getBill({
+        room_number: this.room_id,
+      }).then(res => {
+        console.log(res);
+        if (res.status === 200) {
+          ElMessageBox.alert(
+            `
+            Record: ${res.data.record}<br>
+            Room ID: ${res.data.roomid}<br>
+            Check In Date: ${res.data.checkInDate}<br>
+            Check Out Date: ${res.data.checkOutDate}<br>
+            Cost: ${res.data.cost}
+            `,
+            '账单',
+            {
+              dangerouslyUseHTMLString: true,
+              confirmButtonText: '确定',
+              callback: action => {
+                this.dialogVisible = false;
+              }
+            }
+          );
+        }
+        else {
+          ElMessageBox.alert('结账失败', '提示', {
+            confirmButtonText: '确定',
+            callback: action => {
+              this.dialogVisible = false;
+            }
+          });
+        }
+      }).catch(err => {
+        console.log(err);
+      });
+    },
+    Fixed(number, precision) {
+      return Number.parseFloat(number).toFixed(precision);
+    },
   }
 }
 

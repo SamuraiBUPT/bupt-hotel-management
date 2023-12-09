@@ -691,21 +691,21 @@ class Master(Base):
             res = cursor.fetchone()
             if res is None:  # 表示已经取完结果集
                 break
-            id = trans_roomid_to_id(int(res[0]))
             d = {
                 'record': res[0],
                 'room_id': res[1],
                 'query_time': res[2],
                 'start_time': res[3],
                 'end_time': res[4],
-                'speed': res[5],
-                'cost': res[6],
-                'rate': res[7],
+                'serve_time': res[5],
+                'speed': res[6],
+                'cost': res[7],
+                'rate': res[8],
             }
             data.append(d)
-            
+        cursor.close()
         db.close()
-        return d
+        return data
 
     # slave/flipPower
     def slaveFilpPower(self, roomId: str):

@@ -178,7 +178,8 @@ methods: {
             this.currTemp += 0.5 ;
         }
         console.log("当前温度：", this.currTemp)
-        this.send_cur_temperature();
+        console.log("发送请求")
+        // this.send_cur_temperature();
     },
     fetchRoomInfo(){
         api.getQueryRoomInfo({
@@ -198,8 +199,9 @@ methods: {
         });
     },
     send_cur_temperature() {
+        console.log("发送出去的温度：", this.currTemp)
         api.postCurTemperature({
-            room_number: this.form1.field1, cur_temp: this.currTemp
+            room_number: this.form1.field1, current_temp: this.currTemp
         }).catch(err => {
             console.log(err);
             console.log('send failed');
