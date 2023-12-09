@@ -151,4 +151,4 @@ python SE-TEST.py
 
 # 写在最后面
 
-[![LICENSE](https://img.shields.io/badge/license-傻逼软件工程-blue.svg?style=flat-square)](https://zh.wikipedia.org/wiki/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B)
+[![LICENSE](https://img.shields.io/badge/license-傻逼软件工程-blue.svg?style=flat-square)](https://zh.wikipedia.org/wiki/%E8%BD%AF%E4%BB%B6%E5%B7%A5%E7%A8%8B) [![LICENSE](https://img.shields.io/badge/license-傻逼肖登-orange.svg?style=flat-square)](https://github.com/SamuraiBUPT/bupt-hotel-management/blob/main/LICENSE) [![LICENSE](https://img.shields.io/badge/license-助教就是我滴神-green.svg?style=flat-square)](https://github.com/SamuraiBUPT/bupt-hotel-management/blob/main/LICENSE)
