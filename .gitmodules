@@ -1,0 +1,3 @@
+[submodule "backend_cpp/3rd_party/crow"]
+	path = backend_cpp/3rd_party/crow
+	url = https://github.com/SamuraiBUPT/crow.git
