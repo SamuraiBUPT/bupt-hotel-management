@@ -160,3 +160,5 @@ cython_debug/
 #.idea/
 
 backend_cpp/crow_all.h
+backend_golang/backend_go
+backend_golang/hotel.db
