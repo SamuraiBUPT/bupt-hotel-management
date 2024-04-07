@@ -14,13 +14,13 @@ const DB_FILE_NAME string = "hotel.db"
 
 var DB *gorm.DB
 var SQLDB *sql.DB
+var Init bool
 
 func Init_DB() {
-	var init bool = false
 
 	if _, err := os.Stat(DB_FILE_NAME); os.IsNotExist(err) {
 		// 文件不存在，进行数据库初始化
-		init = true
+		Init = true
 	} else {
 		// 文件存在，进行检查操作
 		fmt.Println("`hotel.db` exists, performing check operation")
@@ -42,7 +42,7 @@ func Init_DB() {
 	DB = db
 	SQLDB = sqlDB // allocate once, the gorm will manage the connection pool for you, even if you use many goroutines
 
-	if init {
+	if Init {
 		initLocalSqliteDB()
 	}
 }
@@ -53,28 +53,8 @@ func initLocalSqliteDB() {
 	// Migrate the schema
 	DB.AutoMigrate(&Room{}, &Bill{}, &Checkboard{}, &Detail{}, &User{}, &OpRecord{}, &ScheduleBoard{})
 
-	// // 注意：实际上Room表我们是用不到的，在这里仅仅是为了验证CRUD功能是否能正常运作。剩下的表才是我们真正要用的。
-	// // 插入内容
-	// DB.Create(&Room{Room_id: 101, Bill: 250.0, Status: "available"})
-	// DB.Create(&Room{Room_id: 102, Bill: 365.78, Status: "busy"})
-
-	// // 读取内容
-	// var product Room
-	// DB.First(&product, 1)                   // find product with integer primary key
-	// DB.First(&product, "Bill = ?", "250.0") // find product with Bill equal to 250.0
-
-	// // 更新操作：更新单个字段
-	// DB.Model(&product).Update("Bill", 2000.5)
-
-	// // 更新操作：更新多个字段
-	// DB.Model(&product).Updates(Room{Bill: 2001.5, Status: "exit"}) // non-zero fields
-	// // db.Model(&product).Updates(map[string]interface{}{"Price": 2000, "Code": "F42"})
-
-	// // 删除操作：
-	// DB.Delete(&product, 1)
-
-	// DB.Create(&User{Account: "manager", Password: "password", Identity: "0"})
-	// DB.Create(&User{Account: "reception", Password: "password", Identity: "1"})
+	DB.Create(&User{Account: "manager", Password: "password", Identity: "0"})
+	DB.Create(&User{Account: "reception", Password: "password", Identity: "1"})
 
 	fmt.Println("Done initializing local SQLite DB!")
 }

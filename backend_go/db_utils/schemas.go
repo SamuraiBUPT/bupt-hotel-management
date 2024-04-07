@@ -42,7 +42,7 @@ type Detail struct {
 }
 
 type User struct {
-	Account  string `gorm:"primary_key"`
+	Account  string `gorm:"primary_key;type:varchar(255)"`
 	Password string `gorm:"type:varchar(255)"`
 	Identity string `gorm:"type:varchar(255)"`
 }

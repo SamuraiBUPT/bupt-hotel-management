@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"backend_go/db_utils"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -30,5 +31,6 @@ func Login(c *gin.Context) {
 
 	// 登录成功
 	identity := msg
+	fmt.Println("Login successful")
 	c.JSON(http.StatusOK, gin.H{"message": "Login successful", "identity": identity})
 }

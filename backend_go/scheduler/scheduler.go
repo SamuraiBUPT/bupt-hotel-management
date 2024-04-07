@@ -50,33 +50,36 @@ func (s *Scheduler) Start() {
 
 func operateTask(op UpdateOperation) {
 	for idx, field := range op.Types {
+		// fmt.Println("Field:", field, "Value:", op.Values[idx])
+		decoded_idx := op.RoomID%100 + op.RoomID/100 - 1
+		// fmt.Println("Decoded index:", decoded_idx)
 		switch field {
 		case "Name":
-			RoomList[op.RoomID].Name = op.Values[idx]
+			RoomList[decoded_idx].Name = op.Values[idx]
 		case "IdCard":
-			RoomList[op.RoomID].IdCard = op.Values[idx]
+			RoomList[decoded_idx].IdCard = op.Values[idx]
 		case "CheckinDate":
-			RoomList[op.RoomID].CheckinDate = op.Values[idx]
+			RoomList[decoded_idx].CheckinDate = op.Values[idx]
 		case "Cost":
 			cost, _ := strconv.ParseFloat(op.Values[idx], 32)
-			RoomList[op.RoomID].Cost = float32(cost)
+			RoomList[decoded_idx].Cost = float32(cost)
 		case "ExpectTempera":
-			RoomList[op.RoomID].ExpectTempera = op.Values[idx]
+			RoomList[decoded_idx].ExpectTempera = op.Values[idx]
 		case "Speed":
-			RoomList[op.RoomID].Speed = op.Values[idx]
+			RoomList[decoded_idx].Speed = op.Values[idx]
 		case "Tempera":
 			tempera, _ := strconv.ParseFloat(op.Values[idx], 32)
-			RoomList[op.RoomID].Tempera = float32(tempera)
+			RoomList[decoded_idx].Tempera = float32(tempera)
 		case "Power":
-			RoomList[op.RoomID].Power = op.Values[idx]
+			RoomList[decoded_idx].Power = op.Values[idx]
 		case "Timer":
-			RoomList[op.RoomID].Timer = op.Values[idx]
+			RoomList[decoded_idx].Timer = op.Values[idx]
 		case "Min":
-			RoomList[op.RoomID].Min = op.Values[idx]
+			RoomList[decoded_idx].Min = op.Values[idx]
 		case "HaveCheckedin":
-			RoomList[op.RoomID].HaveCheckedin = op.Values[idx]
+			RoomList[decoded_idx].HaveCheckedin = op.Values[idx]
 		case "ShowDetail":
-			RoomList[op.RoomID].ShowDetail = op.Values[idx]
+			RoomList[decoded_idx].ShowDetail = op.Values[idx]
 		default:
 			fmt.Println("Invalid field name")
 		}
@@ -108,7 +111,9 @@ func CreateScheduler(roomCount, servingSize, waitingSize int) *Scheduler {
 			ShowDetail:    "False",
 		}
 
-		db_utils.CreateScheduleRecord(int32(room_id), "", "", "", 0, "20", "medium", 30, "False", "False", "False", "False", "False")
+		if db_utils.Init {
+			db_utils.CreateScheduleRecord(int32(room_id), "", "", "", 0, "20", "medium", 30, "False", "False", "False", "False", "False")
+		}
 	}
 	return &Scheduler{
 		RoomCount:   roomCount,
