@@ -27,3 +27,10 @@
 + /api/query_schedule
 + /api/detail_bill
 + /api/form/roomList
+
+
+
+不想进行数据库的设计工作，也就是不想设计接口，在我们这里全部使用嵌入式SQL语句。
+
+# TODO
+把Python的后端全部重构，摒弃所有架构，从头开始实现一个server，而不是照搬py的框架。
