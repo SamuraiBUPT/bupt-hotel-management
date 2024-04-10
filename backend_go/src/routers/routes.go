@@ -12,5 +12,9 @@ func SetupRoutes(router *gin.Engine) {
 		api.POST("/login", handlers.Login)
 		api.POST("/rooms/checkIn", handlers.CheckIn)
 		api.POST("/rooms/checkOut", handlers.CheckOut)
+		api.POST("/turn_on", handlers.TurnOn)
+		api.POST("/turn_off", handlers.TurnOff)
+		api.POST("/setSpeed", handlers.SetSpeed)
+		api.POST("/setTemperature", handlers.SetTempera)
 	}
 }
