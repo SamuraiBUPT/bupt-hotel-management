@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"backend_go/db_utils"
+	"backend_go/scheduler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -33,6 +34,14 @@ func TurnOn(c *gin.Context) {
 		return
 	}
 
+	// send msg to scheduler
+	msg := scheduler.SchedulerMsg{
+		RoomID: req.RoomNumber,
+		Types:  "add",
+		Speed:  "medium",
+	}
+	scheduler.Sche.MsgChan <- &msg
+
 	c.JSON(200, gin.H{"message": "turn on success"})
 }
 
@@ -55,6 +64,14 @@ func TurnOff(c *gin.Context) {
 		c.JSON(500, gin.H{"error": err.Error()})
 		return
 	}
+
+	// send msg to scheduler
+	msg := scheduler.SchedulerMsg{
+		RoomID: req.RoomNumber,
+		Types:  "delete",
+		Speed:  "medium",
+	}
+	scheduler.Sche.MsgChan <- &msg
 
 	c.JSON(200, gin.H{"message": "turn off success"})
 }

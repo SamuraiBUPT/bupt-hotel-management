@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"backend_go/db_utils"
+	"backend_go/scheduler"
 
 	"github.com/gin-gonic/gin"
 )
@@ -52,7 +53,13 @@ func SetSpeed(c *gin.Context) {
 		return
 	}
 
-	// TODO: 联系scheduler
+	// send msg to scheduler
+	msg := scheduler.SchedulerMsg{
+		RoomID: req.RoomNumber,
+		Types:  "update",
+		Speed:  req.Speed,
+	}
+	scheduler.Sche.MsgChan <- &msg
 
 	// 设置上下文
 

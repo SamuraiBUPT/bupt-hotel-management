@@ -14,6 +14,7 @@ func main() {
 	fmt.Println("Hello, world!")
 	db_utils.Init_DB()
 	scheduler.InitSche(40, 3, 2) // init here, scheduler will run in another goroutine
+	defer scheduler.Sche.Stop()
 
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {

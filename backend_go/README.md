@@ -9,18 +9,11 @@
 首先是可能造成层删改的请求：
 
 + /api/rooms/checkIn  可能有新记录建立
-
 + /api/rooms/checkOut  有新记录建立、有修改
-
 + /api/turn_on   有建立、修改
-
 + /api/turn_off  有建立、修改
-
 + /api/setTemperature
-
 + /api/setSpeed
-
-  <!-- + /api/rooms/updateRooms -->
 
 
 
@@ -78,9 +71,21 @@
 
 我们需要一个数据结构，来记录房间的serve进展。
 
-Slots: room_id, start_time即可。
+Slots: room_id, start_time, speed即可。
 
 之后就是校验时间、滚动这个slots中的房间位置，
+
+
+
+只有第一个管道，传输进来的信息，决定list中slot的滚动状态。scheduler内部的step仅仅负责进行滚动操作。
+
+维护两个队列：waiting_queue和running_queue.
+
+任何一个元素，在最初的时候都是在waiting queue当中。之后会被调度进入running queue。
+
+整体调度的决策树是：
+
+![决策](assets/决策树.png)
 
 
 
@@ -93,6 +98,27 @@ __有关结算__
 不想进行数据库的设计工作，也就是不想设计接口，在我们这里全部使用嵌入式SQL语句。
 
 有关结算，我觉得应该单独开一个goroutine来执行。一方面是执行最底层的普通房间的费用，另一方面是执行来自schedule的结果的费用。scheduler把信息通过管道传输给结算系统，结算系统来进行结算。
+
+
+
+```go
+if waiting_queue.Len() > 0 {
+    if running_queue.Len() < s.ServingSize {
+        // 可以进入
+    } else {
+        first_e_run := running_queue.Front()
+        first_e_wait := waiting_queue.Front()
+        if first_e_wait.Value.(*Slot).Speed >= first_e_run.Value.(*Slot).Speed {
+            // 发生抢占
+        }
+        // 如果到这里了，说明waiting会阻塞。
+    }
+} else {
+	// running queue内部循环
+}
+```
+
+
 
 
 
@@ -118,3 +144,12 @@ __有关结算__
     + scheduler本身还要进行schedule，schedule完了之后还要把schedule的内容给IO到数据库里面，加上之前的IO，他要分别进行两种不同的IO操作。
 + Scheduler仅仅是负责scheduler，它基于的信息来源就是自己的一套信息，它输出的地方就是数据库。所以其实是handler和scheduler都要对数据库有CRUD操作。scheduler除了schedule的逻辑之外，不负责执行任何除此之外的任务。
 
+
+
+
+
+# TODO
+
+进行scheduler的数据库IO操作，记录时间、进行计算。
+
+完成结算的设计。

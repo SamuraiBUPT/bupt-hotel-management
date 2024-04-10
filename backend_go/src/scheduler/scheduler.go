@@ -1,40 +1,30 @@
 package scheduler
 
 import (
+	"container/list"
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 )
 
 // Scheduler is a single instance, which cannot be created twice.
 // In the lifespan of the program, there will be only one scheduler.
-type SchedulerTask struct {
-	Types  []string
+type SchedulerMsg struct {
 	RoomID int
-	Values []string
+	Types  string // 'add', 'update', 'delete'
+	Speed  string // 'low', 'medium', 'high'
 }
 
 type Scheduler struct {
 	RoomCount   int
 	ServingSize int
-	TaskChan    chan *SchedulerTask
+	MsgChan     chan *SchedulerMsg
 }
 
-type ScheduleBody struct {
-	Room_id       int
-	Name          string
-	IdCard        string
-	CheckinDate   string
-	Cost          float32
-	ExpectTempera string
-	Speed         string
-	Tempera       float32
-	Power         string
-	Timer         string
-	Min           string
-	HaveCheckedin string
-	ShowDetail    string
+type Slot struct {
+	RoomID int
+	Start  time.Time // time is used to recording the serving time, because it will be preempted by others
+	Speed  int       // 1: low, 2: medium, 3: high
 }
 
 // The design of this package is: scheduler can be created through `InitSche()` function,
@@ -46,13 +36,14 @@ var Sche *Scheduler // public, global variable
 
 // the essential data structure of the scheduler, private
 var scheMutex sync.Mutex
-var sche_room_list []*ScheduleBody
+var waiting_queue *list.List
+var running_queue *list.List
 
 // ===================== structure method field =====================
 func (s *Scheduler) Start() {
 	go func() {
-		for op := range s.TaskChan {
-			executeTask(op)
+		for msg := range s.MsgChan {
+			processMsg(msg)
 		}
 	}()
 
@@ -70,89 +61,126 @@ func (s *Scheduler) Start() {
 
 func (s *Scheduler) step() {
 	fmt.Println("schedule")
+	if waiting_queue.Len() == 0 && running_queue.Len() == 0 {
+		return
+	}
 	scheMutex.Lock()
 	defer scheMutex.Unlock()
+
+	if waiting_queue.Len() > 0 {
+		if running_queue.Len() < s.ServingSize {
+			first_e_wait := waiting_queue.Front() // 自然进入
+			running_queue.PushBack(first_e_wait.Value)
+			waiting_queue.Remove(first_e_wait)
+		} else {
+			first_e_run := running_queue.Front()
+			first_e_wait := waiting_queue.Front()
+			if first_e_wait.Value.(*Slot).Speed >= first_e_run.Value.(*Slot).Speed {
+				running_queue.Remove(first_e_run)
+				running_queue.PushBack(first_e_wait.Value)
+				waiting_queue.Remove(first_e_wait)
+				insertWaitingQueue(first_e_run.Value.(*Slot)) // 被抢占，重新进入等待队列
+			}
+		}
+	} else {
+		running_queue.MoveToBack(running_queue.Front())
+	}
 }
 
 func (s *Scheduler) Stop() {
-	close(s.TaskChan)
+	close(s.MsgChan)
 }
 
 // ===================== helper function field =====================
-func executeTask(op *SchedulerTask) {
+func getSpeed(speed string) int {
+	switch speed {
+	case "low":
+		return 1
+	case "medium":
+		return 2
+	case "high":
+		return 3
+	default:
+		fmt.Println("invalid speed")
+		return 1
+	}
+}
+
+func insertWaitingQueue(slot *Slot) {
+	// warning: this function must be executed after scheMutex is locked.
+	if waiting_queue.Len() == 0 {
+		waiting_queue.PushBack(&slot)
+	} else {
+		var e *list.Element
+		for e = waiting_queue.Front(); e != nil; e = e.Next() {
+			if slot.Speed > e.Value.(*Slot).Speed {
+				break // it will find the first slot with speed less than the new slot's speed
+			}
+		}
+		if e != nil {
+			waiting_queue.InsertBefore(&slot, e)
+		} else {
+			waiting_queue.PushBack(&slot)
+		}
+	}
+}
+
+func processMsg(msg *SchedulerMsg) {
+	// this function is responsible for converting msg to slot
+	// and send it to waiting queue.
 	scheMutex.Lock()
 	defer scheMutex.Unlock()
 
-	for idx, field := range op.Types {
-		decoded_idx := op.RoomID%100 + op.RoomID/100 - 1 // decode: convert the room ID to the index of the sche_room_list
-		if decoded_idx < 0 || decoded_idx >= len(sche_room_list) {
-			fmt.Println("Invalid room ID")
-			return
-		}
-
-		switch field {
-		case "Name":
-			sche_room_list[decoded_idx].Name = op.Values[idx]
-		case "IdCard":
-			sche_room_list[decoded_idx].IdCard = op.Values[idx]
-		case "CheckinDate":
-			sche_room_list[decoded_idx].CheckinDate = op.Values[idx]
-		case "Cost":
-			cost, _ := strconv.ParseFloat(op.Values[idx], 32)
-			sche_room_list[decoded_idx].Cost = float32(cost)
-		case "ExpectTempera":
-			sche_room_list[decoded_idx].ExpectTempera = op.Values[idx]
-		case "Speed":
-			sche_room_list[decoded_idx].Speed = op.Values[idx]
-		case "Tempera":
-			tempera, _ := strconv.ParseFloat(op.Values[idx], 32)
-			sche_room_list[decoded_idx].Tempera = float32(tempera)
-		case "Power":
-			sche_room_list[decoded_idx].Power = op.Values[idx]
-		case "Timer":
-			sche_room_list[decoded_idx].Timer = op.Values[idx]
-		case "Min":
-			sche_room_list[decoded_idx].Min = op.Values[idx]
-		case "HaveCheckedin":
-			sche_room_list[decoded_idx].HaveCheckedin = op.Values[idx]
-		case "ShowDetail":
-			sche_room_list[decoded_idx].ShowDetail = op.Values[idx]
-		default:
-			fmt.Println("Invalid field name")
+	var slot *Slot
+	var e *list.Element
+	var place int
+	for e = waiting_queue.Front(); e != nil; e = e.Next() {
+		if e.Value.(*Slot).RoomID == msg.RoomID {
+			slot = e.Value.(*Slot)
+			place = 2
+			break
 		}
 	}
+	for e = running_queue.Front(); e != nil; e = e.Next() {
+		if e.Value.(*Slot).RoomID == msg.RoomID {
+			slot = e.Value.(*Slot)
+			place = 1
+			break
+		}
+	}
+
+	if slot == nil {
+		slot = &Slot{
+			RoomID: msg.RoomID,
+			Start:  time.Now(),
+			Speed:  getSpeed(msg.Speed),
+		}
+		insertWaitingQueue(slot)
+	} else {
+		if msg.Types == "update" {
+			slot.Speed = getSpeed(msg.Speed)
+			e.Value.(*Slot).Speed = slot.Speed
+		} else if msg.Types == "delete" {
+			if place == 1 {
+				running_queue.Remove(e)
+			} else if place == 2 {
+				waiting_queue.Remove(e)
+			}
+		}
+	}
+	// The index of the slot depends on the speed.
 }
 
 func CreateScheduler(roomCount, servingSize, waitingSize int) *Scheduler {
 	if servingSize+waitingSize > roomCount {
 		return nil
 	}
-	sche_room_list = make([]*ScheduleBody, roomCount)
-	for i := 0; i < roomCount; i++ {
-		floor := i/10 + 1
-		roomNumber := i%10 + 1
-		room_id := floor*100 + roomNumber
-		sche_room_list[i] = &ScheduleBody{
-			Room_id:       room_id,
-			Name:          "",
-			IdCard:        "",
-			CheckinDate:   "",
-			Cost:          0,
-			ExpectTempera: "20",
-			Speed:         "medium",
-			Tempera:       30,
-			Power:         "False",
-			Timer:         "False",
-			Min:           "False",
-			HaveCheckedin: "False",
-			ShowDetail:    "False",
-		}
-
-	}
+	waiting_queue = list.New()
+	running_queue = list.New()
 	return &Scheduler{
 		RoomCount:   roomCount,
 		ServingSize: servingSize,
-		TaskChan:    make(chan *SchedulerTask, servingSize*10), // 20 is the buffer size of the channel
+		MsgChan:     make(chan *SchedulerMsg, servingSize*10), // 20 is the buffer size of the channel
 	}
 }
 
