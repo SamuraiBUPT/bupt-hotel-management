@@ -77,6 +77,28 @@ Slots: room_id, start_time, speed即可。
 
 
 
+## 调度算法
+
+考虑到有一个scheduler，我们将让这个scheduler持有两个goroutine。
+
+一个负责进行scheduler的step操作，每隔一秒钟step一次，进行调度算法的工作。
+
+另一个负责处理来自handler的任务。面对到来的请求，我们在handler层就已经可以进行数据库IO操作。在经过数据库IO之后，再把信息数据更新给Scheduler，便于Scheduler进行Step。
+
+如图所示：
+
+![structure](assets/structure.png)
+
+这种设计出于两个考虑：
+
++ 如果是先把数据发送给scheduler，再由scheduler决定数据是否持久化到数据库中。整个过程比较复杂，比如说：
+  + scheduler要还要涉及一堆判断逻辑，需要判断要把handler的信息中的哪些内容，更新到哪个表中，这是很复杂的判断逻辑
+  + Task不好写，因为task的种类繁多，不可能全部覆盖完，代码量会非常恐怖。
+  + scheduler本身还要进行schedule，schedule完了之后还要把schedule的内容给IO到数据库里面，加上之前的IO，他要分别进行两种不同的IO操作。
++ Scheduler仅仅是负责scheduler，它基于的信息来源就是自己的一套信息，它输出的地方就是数据库。所以其实是handler和scheduler都要对数据库有CRUD操作。scheduler除了schedule的逻辑之外，不负责执行任何除此之外的任务。
+
+
+
 只有第一个管道，传输进来的信息，决定list中slot的滚动状态。scheduler内部的step仅仅负责进行滚动操作。
 
 维护两个队列：waiting_queue和running_queue.
@@ -89,15 +111,7 @@ Slots: room_id, start_time, speed即可。
 
 
 
-__有关结算__
 
-结束的时候要进行结算，去详单里面结算。只有能够被结算的房间才会被持久化到数据库中，比如说仅仅是时间片被抢占出来了，不能被结算，因为query_time是请求到来的时间、start_time是开始服务的时间，中途可能被抢占出来，并不算做serve结束了，因此end_time和serve_time这两个字段没有办法填充数据，这个时候就不算做结算。
-
-重申：只有彻底退出了serve任务的，才能够被结算。
-
-不想进行数据库的设计工作，也就是不想设计接口，在我们这里全部使用嵌入式SQL语句。
-
-有关结算，我觉得应该单独开一个goroutine来执行。一方面是执行最底层的普通房间的费用，另一方面是执行来自schedule的结果的费用。scheduler把信息通过管道传输给结算系统，结算系统来进行结算。
 
 
 
@@ -122,34 +136,62 @@ if waiting_queue.Len() > 0 {
 
 
 
+__有关结算__
 
+结束的时候要进行结算，去详单里面结算。只有能够被结算的房间才会被持久化到数据库中，比如说仅仅是时间片被抢占出来了，不能被结算，因为query_time是请求到来的时间、start_time是开始服务的时间，中途可能被抢占出来，并不算做serve结束了，因此end_time和serve_time这两个字段没有办法填充数据，这个时候就不算做结算。
 
-# 项目设计方案
+重申：只有彻底退出了serve任务的，才能够被结算。
 
-考虑到有一个scheduler，我们将让这个scheduler持有两个goroutine。
-
-一个负责进行scheduler的step操作，每隔一秒钟step一次，进行调度算法的工作。
-
-另一个负责处理来自handler的任务。面对到来的请求，我们在handler层就已经可以进行数据库IO操作。在经过数据库IO之后，再把信息数据更新给Scheduler，便于Scheduler进行Step。
-
-如图所示：
-
-![structure](assets/structure.png)
-
-这种设计出于两个考虑：
-
-+ 如果是先把数据发送给scheduler，再由scheduler决定数据是否持久化到数据库中。整个过程比较复杂，比如说：
-    + scheduler要还要涉及一堆判断逻辑，需要判断要把handler的信息中的哪些内容，更新到哪个表中，这是很复杂的判断逻辑
-    + Task不好写，因为task的种类繁多，不可能全部覆盖完，代码量会非常恐怖。
-    + scheduler本身还要进行schedule，schedule完了之后还要把schedule的内容给IO到数据库里面，加上之前的IO，他要分别进行两种不同的IO操作。
-+ Scheduler仅仅是负责scheduler，它基于的信息来源就是自己的一套信息，它输出的地方就是数据库。所以其实是handler和scheduler都要对数据库有CRUD操作。scheduler除了schedule的逻辑之外，不负责执行任何除此之外的任务。
+不想进行数据库的设计工作，也就是不想设计接口，在我们这里全部使用嵌入式SQL语句。
 
 
 
 
 
-# TODO
+## 协程划分
 
-进行scheduler的数据库IO操作，记录时间、进行计算。
+整个scheduler有三个协程
 
-完成结算的设计。
++ 监听协程：负责监听来自外部的任务
+  + add
+  + update 改变风速
+  + delete 从队列中移除
++ step协程：每隔一段时间step一次，仅仅负责调度队列
++ 结算协程：这个协程负责进行调度结果的数据库入库操作
+
+我们在上面说了，有可能一个房间仅仅是被抢占了。所以serve time 不等于`end_time-start_time`这么简单
+
+详单表，仅仅是我们等级的一个结果。并不能成为一个可以被随时更新的表格。
+
+所以我们应该有一个schedule_board。
+
+
+
+我们从结算协程的角度，考虑如下情况：
+
++ running queue中被移除了一个：
+  + 可能是被抢占了，这个时候要记录他的开始与结束时间，加入scheduler board，这个时候仅仅是加入而已，并不涉及结算
+  + 可能是关空调了，也就是delete了，或者空调被update了，就要进行结算了。（因为要产生详单）计算费用，同时要把之前scheduler_board里面的所有记录内容全部进行结算。
+    + 同时，要开启结算，首先是结算所有的内容，然后从数据库中移除相关记录
+
+
+
+所以，scheduler board中要有如下字段：
+
++ room_id
++ speed
++ duration
++ cost
+
+
+
+除此之外，不需要关心其他任何行为，包括：
+
++ running queue中添加了一个，waiting queue中添加、减少了一个
+
+
+
+现在还有一个要解决的问题是，在进行update的时候，改变了风速，详单里面必须要有更新。
+
+可以再开一个协程，用于进行结算进详单表里面
+

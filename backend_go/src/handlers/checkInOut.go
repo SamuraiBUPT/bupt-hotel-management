@@ -38,12 +38,6 @@ func CheckIn(c *gin.Context) {
 	}
 
 	// send message to scheduler to update local data for schedule
-	// op := scheduler.SchedulerTask{
-	// 	Types:  []string{"Name", "CheckinDate", "ShowDetail", "IdCard", "HaveCheckedin"},
-	// 	RoomID: room_number,
-	// 	Values: []string{form.Name, formated_time, form.ShowDetails, form.IdCard, strconv.FormatBool(have_check_in)},
-	// }
-	// scheduler.Sche.TaskChan <- &op // here we send the operation message ptr through the channel to the scheduler
 
 	c.JSON(200, gin.H{
 		"message": "Check in successfully",

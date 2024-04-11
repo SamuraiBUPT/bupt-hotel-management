@@ -50,7 +50,7 @@ func initLocalSqliteDB() {
 	fmt.Println("Initializing local SQLite DB")
 
 	// Migrate the schema
-	DB.AutoMigrate(&RoomInfo{}, &OpRecord{}, &Detail{}, &User{})
+	DB.AutoMigrate(&RoomInfo{}, &OpRecord{}, &Detail{}, &User{}, &SchedulerBoard{})
 
 	DB.Create(&User{Account: "manager", Password: "password", Identity: "0"})
 	DB.Create(&User{Account: "reception", Password: "password", Identity: "1"})

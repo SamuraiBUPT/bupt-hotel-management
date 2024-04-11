@@ -39,3 +39,11 @@ type User struct {
 	Password string `gorm:"type:varchar(255)"`
 	Identity string `gorm:"type:varchar(255)"`
 }
+
+type SchedulerBoard struct {
+	ID       int `gorm:"primary_key"`
+	RoomID   int
+	Duration float32 `gorm:"type:float(5, 2)"`
+	Speed    string  `gorm:"type:varchar(255)"`
+	Cost     float32 `gorm:"type:float(7, 2)"`
+}
