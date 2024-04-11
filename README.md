@@ -3,7 +3,8 @@ A hotel management system, Software Engineering, for bupt 2023 autumn course des
 
 # Project structure & planning
 + backend: Python flask, for faster developing.
-+ frontend: Simple HTML, css, Javascript. `bootstrap` will be used for boosting the page structing.
++ **[new]**: Golang Gin + GORM, no bug && better scheduler
++ frontend: Vue, css, Javascript. `bootstrap` will be used for boosting the page structing.
 
 Notice that we will build a front-backend split system, communicating with standard API.
 
@@ -11,8 +12,8 @@ Notice that we will build a front-backend split system, communicating with stand
 
 # Stack
 + Vue3 (axios, element-plus)
-+ Flask
-+ pymysql
++ Python backend: Flask + pymysql
++ **Golang backend: Gin + GORM**
 
 
 
@@ -30,17 +31,31 @@ Notice that we will build a front-backend split system, communicating with stand
 
 这两个调度算法的implement就是后端的**价值所在**。
 
+
+
 __已知存在的问题__
 
 后端与数据库的交互部分时不时会崩掉，原因未知，但是大多数时候是能跑的。（不清楚到底是他妈网络的问题还是电脑与MySQL Connection的问题还是他妈的代码的问题，不过从报错信息上来看似乎是使用连接的方式有问题，后人可以完善一下连接池的处理）
 
 
 
+# 2024-04-11 update
+
+朝花夕拾，我自己重新写了一遍后端的代码。使用的语言是Golang，框架是Gin + GORM
+
+一方面，更加清晰、完善的提供给了大家scheduler的逻辑与思路。
+
+另一方面是不存在bug，及时存在也能快速定位，比Python版本的屎山好多了。
+
+
+
 # 如何启动？
+
+## 1. Python backend
 
 **请严格按照：启动后端-启动前端-启动checkin的顺序执行！！！！！**
 
-## 1. __后端启动：__
+### 1.1 __后端启动：__
 
 后端部分的启动较为复杂，在启动之前，你需要先配置好你的数据库。
 
@@ -83,7 +98,7 @@ python server.py
 
 
 
-## 2. __前端启动：__
+### 1.2 __前端启动：__
 
 **注意：在启动前端之前，必须先启动后端！！！**
 
@@ -96,7 +111,7 @@ npm run dev
 
 
 
-## 3. 进行checkin
+### 1.3 进行checkin
 
 为了方便，我们每次都是通过一份脚本进行checkin的，而不是手动去前端那里戳戳戳
 
@@ -111,7 +126,7 @@ python checkin.py
 
 
 
-## 4. 测试脚本
+### 1.4 测试脚本
 
 为了验证我们的系统到底怎么样，我们有一份测试脚本。
 
@@ -125,6 +140,24 @@ python SE-TEST.py
 ```
 
 之后会生成一份`result.xlsx`文件作为输出结果（如果运行顺利的话）
+
+
+
+## 2. Golang backend
+
+非常简单，仅仅需要你安装了golang环境即可。
+
+
+
+```bash
+git clone https://github.com/SamuraiBUPT/bupt-hotel-management
+cd bupt-hotel-management
+
+cd backend_go/src
+bash launch.sh
+```
+
+之后会自动创建数据库、启动server。
 
 
 
